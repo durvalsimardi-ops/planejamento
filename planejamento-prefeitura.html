@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planejamento Municipal — Prefeitura</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #122040;
+    --blue: #1a56db;
+    --blue-light: #2563eb;
+    --blue-pale: #dbeafe;
+    --gold: #f59e0b;
+    --gold-light: #fef3c7;
+    --green: #059669;
+    --green-light: #d1fae5;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --orange: #ea580c;
+    --orange-light: #ffedd5;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+    --shadow: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.14), 0 4px 10px rgba(0,0,0,.08);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--navy);
+    color: var(--white);
+    padding: 0 32px;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-brand .escudo {
+    width: 36px; height: 36px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header-brand h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: .3px;
+  }
+  .header-brand span {
+    display: block;
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 400;
+    margin-top: 1px;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .countdown {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    padding: 6px 14px;
+  }
+  .countdown-block {
+    text-align: center;
+  }
+  .countdown-block .num {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .countdown-block .lbl {
+    font-size: 9px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-top: 1px;
+  }
+  .countdown-sep {
+    color: var(--gray-500);
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .today-badge {
+    font-size: 12px;
+    color: var(--gray-300);
+  }
+  .today-badge strong { color: var(--white); }
+
+  /* ─── NAV TABS ─── */
+  .nav-tabs {
+    background: var(--navy-mid);
+    padding: 0 32px;
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-400);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    user-select: none;
+  }
+  .nav-tab .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .5;
+  }
+  .nav-tab:hover { color: var(--white); }
+  .nav-tab.active {
+    color: var(--white);
+    border-bottom-color: var(--gold);
+  }
+  .nav-tab.active .dot { opacity: 1; }
+
+  /* ─── MAIN ─── */
+  main { padding: 28px 32px 60px; max-width: 1600px; margin: 0 auto; }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--navy);
+  }
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 3px;
+  }
+
+  /* ─── WEEK SELECTOR ─── */
+  .week-selector {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .week-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--gray-200);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .week-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .week-btn.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: var(--white);
+  }
+  .week-btn.current::after {
+    content: ' •';
+    color: var(--gold);
+  }
+
+  /* ─── WEEK INFO BAR ─── */
+  .week-info {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+  }
+  .week-info-left h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .week-info-left p {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+  .week-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .week-progress-bar {
+    width: 200px;
+    height: 6px;
+    background: var(--gray-200);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .week-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--blue-light));
+    border-radius: 10px;
+    transition: width .4s ease;
+  }
+  .week-progress-pct {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ─── KANBAN BOARD ─── */
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+    min-width: 0;
+  }
+  @media (max-width: 1200px) {
+    .kanban-board { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .day-col { min-width: 0; }
+  .day-header {
+    text-align: center;
+    padding: 8px 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--gray-400);
+    border-bottom: 2px solid var(--gray-200);
+    margin-bottom: 10px;
+  }
+  .day-header.today {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+  .day-header .day-num {
+    display: block;
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--gray-700);
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .day-header.today .day-num {
+    background: var(--blue);
+    color: var(--white);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 4px auto 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* ─── CARD ─── */
+  .task-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 11px 13px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all .18s;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    border-left: 3px solid var(--blue);
+  }
+  .task-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+  }
+  .task-card.alta { border-left-color: var(--red); }
+  .task-card.media { border-left-color: var(--gold); }
+  .task-card.baixa { border-left-color: var(--green); }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .card-type {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .card-time {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .card-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--gray-800);
+    line-height: 1.35;
+    margin-bottom: 6px;
+  }
+  .card-canal {
+    font-size: 11px;
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 7px;
+  }
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 7px;
+  }
+  .avatar {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--blue-pale);
+    color: var(--blue);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    text-transform: uppercase;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+  }
+  .status-label { font-size: 10.5px; font-weight: 500; color: var(--gray-500); }
+
+  .add-card-btn {
+    width: 100%;
+    padding: 8px;
+    border: 1.5px dashed var(--gray-300);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--gray-400);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .add-card-btn:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+    background: var(--blue-pale);
+  }
+
+  /* ─── BADGES ─── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+  .badge-alta { background: var(--red-light); color: var(--red); }
+  .badge-media { background: var(--gold-light); color: var(--orange); }
+  .badge-baixa { background: var(--green-light); color: var(--green); }
+  .badge-post { background: var(--purple-light); color: var(--purple); }
+  .badge-release { background: var(--blue-pale); color: var(--blue); }
+  .badge-evento { background: var(--teal-light); color: var(--teal); }
+  .badge-entrevista { background: var(--gold-light); color: var(--orange); }
+  .badge-crise { background: var(--red-light); color: var(--red); }
+  .badge-campanha { background: var(--navy); color: var(--white); }
+
+  /* ─── OVERVIEW CARDS ─── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .overview-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .overview-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+  }
+  .ov-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .ov-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .ov-total {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 500;
+  }
+  .ov-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .ov-sub {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 12px;
+  }
+  .ov-bar { height: 5px; background: var(--gray-100); border-radius: 10px; overflow: hidden; }
+  .ov-bar-fill { height: 100%; border-radius: 10px; }
+  .ov-pct { font-size: 12px; font-weight: 600; margin-top: 6px; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,22,40,.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(12px) scale(.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-header {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .modal-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--navy);
+    line-height: 1.3;
+    max-width: 480px;
+  }
+  .modal-close {
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    border: none;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: var(--gray-200); }
+  .modal-body { padding: 20px 24px; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .modal-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--gray-400);
+    margin-bottom: 5px;
+  }
+  .modal-field .val {
+    font-size: 13.5px;
+    color: var(--gray-700);
+    font-weight: 500;
+  }
+  .modal-desc {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-100);
+  }
+  .modal-desc label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--gray-400);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .modal-desc p {
+    font-size: 13.5px;
+    color: var(--gray-600);
+    line-height: 1.6;
+  }
+  .modal-footer {
+    padding: 14px 24px 22px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 18px;
+    border-radius: 7px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--blue); color: var(--white); }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-success { background: var(--green); color: var(--white); }
+  .btn-success:hover { background: #047857; }
+  .btn-ghost {
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border: 1px solid var(--gray-200);
+  }
+  .btn-ghost:hover { background: var(--gray-200); }
+
+  /* ─── ADD TASK MODAL ─── */
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 5px;
+  }
+  .form-control {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 7px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--gray-800);
+    background: var(--white);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .form-control:focus { border-color: var(--blue); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ─── STATS ROW ─── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-card .label { font-size: 11px; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-card .value { font-size: 26px; font-weight: 700; color: var(--navy); margin: 4px 0 2px; line-height: 1; }
+  .stat-card .sub { font-size: 11.5px; color: var(--gray-500); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 10px; }
+
+  /* ─── ALERT POPUP ─── */
+  .alert-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,22,40,.6);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .alert-overlay.open { display: flex; }
+  .alert-modal {
+    background: var(--white);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0,0,0,.22);
+    animation: modalIn .25s ease;
+  }
+  .alert-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1e3a6e 100%);
+    border-radius: 16px 16px 0 0;
+    padding: 20px 24px 18px;
+  }
+  .alert-header .date-pill {
+    display: inline-block;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: .3px;
+    text-transform: capitalize;
+    margin-bottom: 10px;
+  }
+  .alert-header .motiv {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    color: var(--white);
+    line-height: 1.5;
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+  .alert-header .motiv-author {
+    font-size: 11px;
+    color: rgba(255,255,255,.55);
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .alert-section {
+    padding: 18px 22px 4px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .alert-section:last-of-type { border-bottom: none; }
+  .alert-section h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    color: var(--gray-400);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-top: 1px solid var(--gray-100);
+  }
+  .alert-item:first-of-type { border-top: none; }
+  .alert-item-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .alert-item-body { flex: 1; min-width: 0; }
+  .alert-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-800);
+    line-height: 1.3;
+  }
+  .alert-item-sub {
+    font-size: 11.5px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+  .alert-item-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .tag-hoje   { background: #fef3c7; color: #b45309; }
+  .tag-amanha { background: #dbeafe; color: #1e40af; }
+  .tag-atraso { background: #fee2e2; color: #b91c1c; }
+  .tag-externo{ background: #ede9fe; color: #6d28d9; }
+  .alert-empty {
+    text-align: center;
+    padding: 20px;
+    color: var(--gray-400);
+    font-size: 13px;
+  }
+  .alert-footer {
+    padding: 14px 22px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  /* ─── LICITAÇÕES ─── */
+  .lic-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .lic-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .lic-filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--gray-200);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .lic-filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .lic-filter-btn.active { background: var(--blue); border-color: var(--blue); color: var(--white); }
+  .lic-filter-btn.f-agendada.active    { background: #0369a1; border-color: #0369a1; }
+  .lic-filter-btn.f-aguardando.active  { background: #9333ea; border-color: #9333ea; }
+  .lic-filter-btn.f-concluida.active   { background: #059669; border-color: #059669; }
+
+  .lic-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .lic-stat {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .lic-stat .ls-label { font-size: 10.5px; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .lic-stat .ls-val   { font-size: 20px; font-weight: 700; color: var(--navy); margin: 3px 0 1px; line-height: 1; }
+  .lic-stat .ls-sub   { font-size: 11px; color: var(--gray-500); }
+
+  .lic-table {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .lic-table-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 80px;
+    padding: 10px 18px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--gray-400);
+    gap: 10px;
+  }
+  .lic-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 80px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--gray-100);
+    gap: 10px;
+    align-items: center;
+    transition: background .15s;
+    cursor: pointer;
+  }
+  .lic-row:last-child { border-bottom: none; }
+  .lic-row:hover { background: var(--gray-50); }
+  .lic-row-title { font-size: 13px; font-weight: 600; color: var(--gray-800); line-height: 1.3; }
+  .lic-row-sub   { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .lic-row-val   { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .lic-row-date  { font-size: 12.5px; font-weight: 500; color: var(--gray-600); }
+  .lic-row-date.today   { color: var(--orange); font-weight: 700; }
+  .lic-row-date.overdue { color: var(--red);    font-weight: 700; }
+  .lic-row-date.future  { color: var(--blue);   }
+  .lic-row-organ { font-size: 11.5px; color: var(--gray-500); }
+
+  .lic-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .ls-agendada   { background: #e0f2fe; color: #0369a1; }
+  .ls-aguardando { background: #ede9fe; color: #6d28d9; }
+  .ls-concluida  { background: #d1fae5; color: #065f46; }
+
+  .lic-action-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1.5px solid var(--gray-200);
+    background: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .lic-action-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  .lic-empty {
+    padding: 50px;
+    text-align: center;
+    color: var(--gray-400);
+    font-size: 14px;
+  }
+
+  /* ─── LIC MODAL ─── */
+  .lic-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .status-change-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .scb {
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1.5px solid var(--gray-200);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .scb:hover { opacity: .85; }
+  .scb.agendada   { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+  .scb.aguardando { background: #ede9fe; color: #6d28d9; border-color: #ddd6fe; }
+  .scb.concluida  { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+
+  /* timeline dot for licitação detail */
+  .lic-timeline { margin-top: 14px; }
+  .lic-tl-item  { display: flex; gap: 10px; padding: 6px 0; align-items: flex-start; }
+  .lic-tl-dot   { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .lic-tl-text  { font-size: 12.5px; color: var(--gray-600); line-height: 1.4; }
+
+</style>
+<!-- Firebase via CDN compat (works everywhere) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+(function() {
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCQ7XdML-uM8da2_mcTBzLymG3nb2xMKvo",
+    authDomain:        "planejamento-prefeitura-83885.firebaseapp.com",
+    projectId:         "planejamento-prefeitura-83885",
+    storageBucket:     "planejamento-prefeitura-83885.firebasestorage.app",
+    messagingSenderId: "92264403231",
+    appId:             "1:92264403231:web:07567f65797233aa65602a"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Expose to global
+  window._db      = db;
+  window._fbReady = true;
+  window._fsLib   = {
+    collection: (db, col)       => db.collection(col),
+    doc:        (db, col, id)   => db.collection(col).doc(id),
+    setDoc:     (ref, data)     => ref.set(data),
+    updateDoc:  (ref, data)     => ref.update(data),
+    deleteDoc:  (ref)           => ref.delete(),
+    onSnapshot: (ref, cb)       => ref.onSnapshot(cb)
+  };
+
+  // Listen TASKS
+  db.collection("tasks").onSnapshot(snap => {
+    const tasks = {};
+    snap.forEach(d => { tasks[d.id] = d.data().list || []; });
+    window._state_tasks = tasks;
+    if (window.state) {
+      window.state._tasks = tasks;
+      const activeTab = document.querySelector('.nav-tab.active');
+      if (activeTab) {
+        const tabId = activeTab.dataset.tab;
+        if      (tabId === 'visao-geral')  window.renderOverview  && window.renderOverview();
+        else if (tabId === 'licitacoes')   {} 
+        else window.renderBoard && window.renderBoard(tabId, window.state.currentWeek);
+      }
+    }
+    window.updateSyncIndicator && window.updateSyncIndicator(true);
+  }, err => {
+    console.error("Firestore tasks error:", err);
+    window.updateSyncIndicator && window.updateSyncIndicator(false);
+  });
+
+  // Listen LICITACOES
+  db.collection("licitacoes").onSnapshot(snap => {
+    const lics = [];
+    snap.forEach(d => lics.push({ ...d.data(), _docId: d.id }));
+    lics.sort((a,b) => (a.data||'').localeCompare(b.data||''));
+    window._fbLics = lics;
+    if (document.querySelector('[data-tab="licitacoes"].active')) {
+      window.renderLicitacoes && window.renderLicitacoes();
+    }
+    const alertOpen = document.getElementById('alertModal')?.classList.contains('open');
+    if (alertOpen) {
+      const s = document.getElementById('alert-sections');
+      if (s) s.innerHTML = window.buildAlertSections ? window.buildAlertSections() : '';
+    }
+  }, err => {
+    console.error("Firestore lics error:", err);
+  });
+
+  console.log("🔥 Firebase Compat conectado!");
+})();
+</script>
+
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="escudo">🏛️</div>
+    <div>
+      <h1>Prefeitura Municipal</h1>
+      <span id="headerDate"></span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="today-badge">
+      Planejamento <strong>2026</strong> &nbsp;
+      <span id="sync-indicator" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;
+        background:rgba(255,255,255,.1);border-radius:20px;padding:3px 10px;border:1px solid rgba(255,255,255,.15)">
+        <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:#94a3b8;display:inline-block"></span>
+        <span id="sync-label">Conectando...</span>
+      </span>
+    </div>
+    <div class="countdown" id="countdown">
+      <div class="countdown-block"><div class="num" id="cd-dias">--</div><div class="lbl">Dias</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-block"><div class="num" id="cd-hrs">--</div><div class="lbl">Horas</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-block"><div class="num" id="cd-min">--</div><div class="lbl">Min</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-block"><div class="num" id="cd-sec">--</div><div class="lbl">Seg</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<nav class="nav-tabs" id="navTabs">
+  <div class="nav-tab active" data-tab="visao-geral" onclick="switchTab(this)">
+    <div class="dot" style="background:#f59e0b"></div> Visão Geral
+  </div>
+  <div class="nav-tab" data-tab="comunicacao" onclick="switchTab(this)">
+    <div class="dot" style="background:#1a56db"></div> Comunicação
+  </div>
+  <div class="nav-tab" data-tab="educacao" onclick="switchTab(this)">
+    <div class="dot" style="background:#7c3aed"></div> Educação
+  </div>
+  <div class="nav-tab" data-tab="saude" onclick="switchTab(this)">
+    <div class="dot" style="background:#059669"></div> Saúde
+  </div>
+  <div class="nav-tab" data-tab="obras" onclick="switchTab(this)">
+    <div class="dot" style="background:#ea580c"></div> Obras / Infraestrutura
+  </div>
+  <div class="nav-tab" data-tab="agricultura" onclick="switchTab(this)">
+    <div class="dot" style="background:#0d9488"></div> Agricultura
+  </div>
+  <div class="nav-tab" data-tab="familia" onclick="switchTab(this)">
+    <div class="dot" style="background:#db2777"></div> Família
+  </div>
+  <div class="nav-tab" data-tab="assistencia" onclick="switchTab(this)">
+    <div class="dot" style="background:#9333ea"></div> Assist. Social
+  </div>
+  <div class="nav-tab" data-tab="desenvolvimento" onclick="switchTab(this)">
+    <div class="dot" style="background:#0369a1"></div> Des. Econômico
+  </div>
+  <div class="nav-tab" data-tab="fazenda" onclick="switchTab(this)">
+    <div class="dot" style="background:#b45309"></div> Fazenda
+  </div>
+  <div class="nav-tab" data-tab="gabinete" onclick="switchTab(this)">
+    <div class="dot" style="background:#374151"></div> Gabinete
+  </div>
+  <div class="nav-tab" data-tab="licitacoes" onclick="switchTab(this)">
+    <div class="dot" style="background:#b45309"></div> ⚖️ Licitações
+  </div>
+</nav>
+
+<main>
+
+<!-- ══════════ VISÃO GERAL ══════════ -->
+<div class="page active" id="page-visao-geral">
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Painel Geral da Prefeitura</h2>
+      <p class="section-subtitle">Acompanhamento de todas as secretarias em tempo real</p>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="label">Tarefas Hoje</div>
+      <div class="value" id="stat-hoje">0</div>
+      <div class="sub">em todas as secretarias</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Concluídas</div>
+      <div class="value" id="stat-concluidas" style="color:var(--green)">0</div>
+      <div class="sub">esta semana</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Prioridade Alta</div>
+      <div class="value" id="stat-alta" style="color:var(--red)">0</div>
+      <div class="sub">pendentes</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Semana Atual</div>
+      <div class="value" id="stat-semana" style="color:var(--blue)">1</div>
+      <div class="sub" id="stat-semana-dates"></div>
+    </div>
+  </div>
+
+  <div class="overview-grid" id="overviewGrid"></div>
+</div>
+
+<!-- ══════════ SECRETARIA PAGES ══════════ -->
+<div class="page" id="page-comunicacao"></div>
+<div class="page" id="page-educacao"></div>
+<div class="page" id="page-saude"></div>
+<div class="page" id="page-obras"></div>
+<div class="page" id="page-agricultura"></div>
+<div class="page" id="page-familia"></div>
+<div class="page" id="page-assistencia"></div>
+<div class="page" id="page-desenvolvimento"></div>
+<div class="page" id="page-fazenda"></div>
+<div class="page" id="page-gabinete"></div>
+<div class="page" id="page-licitacoes"></div>
+
+</main>
+
+
+<!-- ─── ALERT POPUP ─── -->
+<div class="alert-overlay" id="alertModal">
+  <div class="alert-modal">
+    <div class="alert-header">
+      <div class="date-pill" id="alert-date-pill"></div>
+      <div class="motiv" id="alert-motiv"></div>
+      <div class="motiv-author" id="alert-author"></div>
+    </div>
+    <div id="alert-sections"></div>
+    <div class="alert-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('alertModal').classList.remove('open')">Ver depois</button>
+      <button class="btn btn-primary" onclick="document.getElementById('alertModal').classList.remove('open')">Entendido ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LIC DETAIL MODAL ─── -->
+<div class="modal-overlay" id="licModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="lic-modal-title">Licitação</h2>
+      <button class="modal-close" onclick="closeModal('licModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="lic-modal-badges"></div>
+      <div class="modal-grid" id="lic-modal-fields"></div>
+      <div class="modal-desc" id="lic-modal-obs-wrap">
+        <label>Documentos / Observações</label>
+        <p id="lic-modal-obs"></p>
+      </div>
+      <div class="modal-desc">
+        <label>Alterar Status</label>
+        <div class="status-change-btns" id="lic-status-btns"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="openEditLicFromDetail()">✏️ Editar</button>
+      <button class="btn" style="background:var(--red-light);color:var(--red)" onclick="confirmDeleteLicFromDetail()">🗑️ Excluir</button>
+      <button class="btn btn-ghost" onclick="closeModal('licModal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ADD LIC MODAL ─── -->
+<div class="modal-overlay" id="addLicModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="addLicModalTitle">Nova Licitação</h2>
+      <button class="modal-close" onclick="closeModal('addLicModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nome / Objeto da Licitação *</label>
+        <input class="form-control" id="lf-nome" placeholder="Ex: Asfalto da Vila Rural">
+      </div>
+      <div class="lic-form-row">
+        <div class="form-group">
+          <label>Data da Licitação *</label>
+          <input class="form-control" id="lf-data" type="date">
+        </div>
+        <div class="form-group">
+          <label>Valor (R$) *</label>
+          <input class="form-control" id="lf-valor" type="text" placeholder="0,00">
+        </div>
+      </div>
+      <div class="lic-form-row">
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" id="lf-status">
+            <option value="agendada">Agendada</option>
+            <option value="aguardando">Aguardando Órgão Externo</option>
+            <option value="concluida">Concluída</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Órgão Responsável</label>
+          <input class="form-control" id="lf-orgao" placeholder="Ex: Paraná Cidades, FNDE...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Secretaria Vinculada</label>
+        <select class="form-control" id="lf-sec">
+          <option value="">— Selecione —</option>
+          <option>Comunicação</option><option>Educação</option><option>Saúde</option>
+          <option>Obras / Infraestrutura</option><option>Agricultura</option>
+          <option>Família</option><option>Assistência Social</option>
+          <option>Desenvolvimento Econômico</option><option>Fazenda</option><option>Gabinete</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Documentos / Observações</label>
+        <textarea class="form-control" id="lf-obs" rows="3" placeholder="Número do processo, links, observações importantes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <input type="hidden" id="lf-edit-id" value="">
+      <button class="btn btn-primary" onclick="saveLic()">Salvar Licitação</button>
+      <button class="btn btn-ghost" onclick="closeModal('addLicModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: DETALHES ─── -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Título da Tarefa</h2>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="modal-badges"></div>
+      <div class="modal-grid" id="modal-fields"></div>
+      <div class="modal-desc">
+        <label>Descrição / Observações</label>
+        <p id="modal-desc-text"></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="markDone()">✓ Marcar Concluído</button>
+      <button class="btn btn-ghost" onclick="closeModal('detailModal')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: ADICIONAR TAREFA ─── -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nova Tarefa</h2>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Título da Tarefa *</label>
+        <input class="form-control" id="f-titulo" placeholder="Ex: Post sobre evento na praça...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select class="form-control" id="f-tipo">
+            <option>Post</option><option>Release</option><option>Evento</option>
+            <option>Entrevista</option><option>Crise</option><option>Campanha</option><option>Reunião</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Canal / Mídia</label>
+          <select class="form-control" id="f-canal">
+            <option>Instagram</option><option>Facebook</option><option>WhatsApp</option>
+            <option>TV</option><option>Rádio</option><option>Outdoor</option>
+            <option>Assessoria de Imprensa</option><option>Site</option><option>Todos</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Prioridade</label>
+          <select class="form-control" id="f-prioridade">
+            <option value="alta">🔴 Alta</option>
+            <option value="media" selected>🟡 Média</option>
+            <option value="baixa">🟢 Baixa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prazo (hora)</label>
+          <input class="form-control" id="f-horario" type="time" value="12:00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Responsável</label>
+          <input class="form-control" id="f-responsavel" placeholder="Nome do responsável">
+        </div>
+        <div class="form-group">
+          <label>Aprovação</label>
+          <select class="form-control" id="f-aprovacao">
+            <option>Pendente</option><option>Aprovado</option><option>Não precisa</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Pauta / Hashtags</label>
+        <input class="form-control" id="f-hashtags" placeholder="#inauguração #saúde #prefeitura">
+      </div>
+      <div class="form-group">
+        <label>Descrição / Observações</label>
+        <textarea class="form-control" id="f-desc" rows="3" placeholder="Detalhes da tarefa, briefing, referências..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveTask()">Salvar Tarefa</button>
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA & STATE
+// ═══════════════════════════════════════════════
+
+const SECRETARIAS = [
+  { id: 'comunicacao', nome: 'Comunicação',         icon: '📢', color: '#1a56db', bg: '#dbeafe', semanas: 8 },
+  { id: 'educacao',    nome: 'Educação',             icon: '📚', color: '#7c3aed', bg: '#ede9fe', semanas: 8 },
+  { id: 'saude',       nome: 'Saúde',                icon: '🏥', color: '#059669', bg: '#d1fae5', semanas: 8 },
+  { id: 'obras',       nome: 'Obras / Infraestrutura', icon: '🏗️', color: '#ea580c', bg: '#ffedd5', semanas: 8 },
+  { id: 'agricultura',          nome: 'Agricultura',               icon: '🌱', color: '#0d9488', bg: '#ccfbf1', semanas: 8 },
+  { id: 'familia',              nome: 'Família',                   icon: '👨‍👩‍👧', color: '#db2777', bg: '#fce7f3', semanas: 8 },
+  { id: 'assistencia',          nome: 'Assistência Social',        icon: '🤝', color: '#9333ea', bg: '#f3e8ff', semanas: 8 },
+  { id: 'desenvolvimento',      nome: 'Desenvolvimento Econômico', icon: '📈', color: '#0369a1', bg: '#e0f2fe', semanas: 8 },
+  { id: 'fazenda',              nome: 'Fazenda',                   icon: '💰', color: '#b45309', bg: '#fef3c7', semanas: 8 },
+  { id: 'gabinete',             nome: 'Gabinete',                  icon: '🏛️', color: '#374151', bg: '#f3f4f6', semanas: 8 },
+];
+
+const DIAS = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+const DIAS_SHORT = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+
+// Calcular semana atual (semana 1 = semana do 1º dia do mês)
+function getCurrentWeek() {
+  const now = new Date();
+  const day = now.getDate();
+  return Math.ceil(day / 7);
+}
+
+// Datas da semana selecionada
+function getWeekDates(weekNum) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  // Encontrar primeira segunda-feira da semana
+  const firstDay = new Date(year, month, 1);
+  const firstMonday = new Date(firstDay);
+  const dow = firstDay.getDay();
+  firstMonday.setDate(firstDay.getDate() + ((dow === 0 ? 1 : (8 - dow) % 7)));
+  // Se o mês começa na segunda, usa do dia 1
+  if (dow === 1) firstMonday.setDate(1);
+
+  const weekStart = new Date(firstMonday);
+  weekStart.setDate(firstMonday.getDate() + (weekNum - 1) * 7);
+
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+}
+
+// Estado global
+const state = {
+  tasks: JSON.parse(localStorage.getItem('pmTasks') || '{}'),
+  currentWeek: getCurrentWeek(),
+  addTarget: { sec: null, dayIdx: null, weekNum: null },
+  editingTaskId: null,
+};
+// When Firebase loads, override tasks with live data
+Object.defineProperty(state, 'tasks', {
+  get() { return window._state_tasks || this._tasks || {}; },
+  set(v) { this._tasks = v; },
+  configurable: true
+});
+state._tasks = JSON.parse(localStorage.getItem('pmTasks') || '{}');
+
+function saveTasks() {
+  if (window._fbReady && window._db) {
+    Object.keys(state._tasks || {}).forEach(key => {
+      window._db.collection("tasks").doc(key).set({ list: (state._tasks||{})[key] || [] }).catch(console.error);
+    });
+  }
+  localStorage.setItem('pmTasks', JSON.stringify(state._tasks || {}));
+}
+
+function taskKey(sec, weekNum, dayIdx) {
+  return `${sec}_w${weekNum}_d${dayIdx}`;
+}
+
+function addTask(sec, weekNum, dayIdx, task) {
+  const key = taskKey(sec, weekNum, dayIdx);
+  if (!state.tasks[key]) state.tasks[key] = [];
+  state.tasks[key].push({ ...task, id: Date.now(), status: 'pendente' });
+  saveTasks();
+}
+
+// Seed de dados de exemplo
+function seedData() {
+  if (localStorage.getItem('pmSeeded')) return;
+
+  const examples = {
+    comunicacao: [
+      { tipo:'Post', canal:'Instagram', prioridade:'alta', titulo:'Stories sobre inauguração da creche', horario:'09:00', responsavel:'Ana Lima', aprovacao:'Aprovado', hashtags:'#educacao #creche #prefeitura', desc:'Publicar 5 stories mostrando o evento de inauguração. Usar template oficial.' },
+      { tipo:'Release', canal:'Assessoria de Imprensa', prioridade:'media', titulo:'Release: Semana Municipal do Meio Ambiente', horario:'11:00', responsavel:'Carlos Melo', aprovacao:'Pendente', hashtags:'#meioambiente #sustentabilidade', desc:'Redigir e enviar release para os veículos locais sobre a semana temática.' },
+      { tipo:'Evento', canal:'Todos', prioridade:'alta', titulo:'Transmissão ao vivo: Reunião da Câmara', horario:'14:00', responsavel:'Diego Souza', aprovacao:'Aprovado', hashtags:'#camaramunicipal #transparencia', desc:'Transmitir ao vivo pelo Facebook e YouTube. Testar equipamentos 30min antes.' },
+    ],
+    educacao: [
+      { tipo:'Reunião', canal:'Interno', prioridade:'media', titulo:'Reunião com diretores de escola', horario:'08:30', responsavel:'Profa. Maria', aprovacao:'Não precisa', hashtags:'#gestao #educacao', desc:'Pauta: cronograma do calendário escolar 2º semestre.' },
+    ],
+    saude: [
+      { tipo:'Campanha', canal:'Rádio', prioridade:'alta', titulo:'Campanha de vacinação contra gripe', horario:'07:00', responsavel:'Dr. Pedro', aprovacao:'Aprovado', hashtags:'#vacinacao #saude #prevencao', desc:'Veicular jingle nos horários de pico. Duração: 30seg. 4x ao dia.' },
+    ],
+    obras: [
+      { tipo:'Post', canal:'Instagram', prioridade:'baixa', titulo:'Atualização obra da Av. Principal', horario:'16:00', responsavel:'Eng. Roberto', aprovacao:'Pendente', hashtags:'#obras #infraestrutura #mobilidade', desc:'Foto e vídeo do progresso das obras. Destacar cronograma de entrega.' },
+    ],
+    agricultura: [
+      { tipo:'Evento', canal:'WhatsApp', prioridade:'media', titulo:'Feira do Produtor Rural - Divulgação', horario:'10:00', responsavel:'Juliana F.', aprovacao:'Aprovado', hashtags:'#feiradoprodutor #agricultura #local', desc:'Enviar arte nos grupos de WhatsApp das associações rurais.' },
+    ],
+  };
+
+  const w = getCurrentWeek();
+  const today = new Date().getDay(); // 0=Dom,1=Seg...
+  const dayMap = [6,0,1,2,3,4,5]; // converter JS day -> kanban index (0=Seg)
+  const todayIdx = dayMap[today];
+
+  Object.keys(examples).forEach(sec => {
+    examples[sec].forEach((t, i) => {
+      const dIdx = (todayIdx + i) % 7;
+      addTask(sec, w, dIdx, t);
+    });
+  });
+
+  localStorage.setItem('pmSeeded', '1');
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════
+
+function renderOverview() {
+  const grid = document.getElementById('overviewGrid');
+  const w = getCurrentWeek();
+
+  let totalHoje = 0, totalAlta = 0, totalConcluidas = 0;
+  const todayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
+
+  grid.innerHTML = SECRETARIAS.map(s => {
+    let total = 0, done = 0, todayCount = 0, alta = 0;
+    for (let d = 0; d < 7; d++) {
+      const tasks = state.tasks[taskKey(s.id, w, d)] || [];
+      total += tasks.length;
+      done += tasks.filter(t => t.status === 'concluido').length;
+      if (d === todayIdx) todayCount += tasks.length;
+      alta += tasks.filter(t => t.prioridade === 'alta' && t.status !== 'concluido').length;
+    }
+    totalHoje += todayCount;
+    totalAlta += alta;
+    totalConcluidas += done;
+    const pct = total ? Math.round(done/total*100) : 0;
+
+    return `<div class="overview-card" onclick="switchTabById('${s.id}')">
+      <div class="ov-header">
+        <div class="ov-icon" style="background:${s.bg}">${s.icon}</div>
+        <div class="ov-total">${total} tarefas • Sem. ${w}</div>
+      </div>
+      <div class="ov-name">${s.nome}</div>
+      <div class="ov-sub">${todayCount} hoje · ${alta > 0 ? `<span style="color:var(--red)">${alta} alta prioridade</span>` : 'sem urgências'}</div>
+      <div class="ov-bar"><div class="ov-bar-fill" style="background:${s.color};width:${pct}%"></div></div>
+      <div class="ov-pct" style="color:${s.color}">${pct}% concluído</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('stat-hoje').textContent = totalHoje;
+  document.getElementById('stat-concluidas').textContent = totalConcluidas;
+  document.getElementById('stat-alta').textContent = totalAlta;
+  document.getElementById('stat-semana').textContent = w;
+
+  const dates = getWeekDates(w);
+  const fmt = d => d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'});
+  document.getElementById('stat-semana-dates').textContent =
+    `${fmt(dates[0])} – ${fmt(dates[6])}`;
+}
+
+function renderSecretaria(secId) {
+  const s = SECRETARIAS.find(x => x.id === secId);
+  const container = document.getElementById(`page-${secId}`);
+  const totalWeeks = s.semanas;
+
+  const weeksHtml = Array.from({length: totalWeeks}, (_, i) => {
+    const w = i + 1;
+    const cur = getCurrentWeek();
+    return `<button class="week-btn ${w === state.currentWeek ? 'active' : ''} ${w === cur ? 'current' : ''}"
+      onclick="selectWeek('${secId}', ${w}, this)">${w === cur ? '▶ ' : ''}Semana ${w}</button>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="section-header">
+      <div>
+        <h2 class="section-title" style="color:${s.color}">${s.icon} ${s.nome}</h2>
+        <p class="section-subtitle">Planejamento semanal — clique em uma semana para ver o kanban</p>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal('${secId}', null, ${getCurrentWeek()})">+ Nova Tarefa</button>
+    </div>
+    <div class="week-selector" id="ws-${secId}">${weeksHtml}</div>
+    <div id="board-${secId}"></div>
+  `;
+
+  renderBoard(secId, state.currentWeek);
+}
+
+function selectWeek(secId, weekNum, btn) {
+  document.querySelectorAll(`#ws-${secId} .week-btn`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.currentWeek = weekNum;
+  renderBoard(secId, weekNum);
+}
+
+function renderBoard(secId, weekNum) {
+  const s = SECRETARIAS.find(x => x.id === secId);
+  const container = document.getElementById(`board-${secId}`);
+  const dates = getWeekDates(weekNum);
+  const today = new Date();
+  const todayStr = today.toDateString();
+
+  // Contagens para barra de progresso
+  let total = 0, done = 0;
+  for (let d = 0; d < 7; d++) {
+    const tasks = state.tasks[taskKey(secId, weekNum, d)] || [];
+    total += tasks.length;
+    done += tasks.filter(t => t.status === 'concluido').length;
+  }
+  const pct = total ? Math.round(done/total*100) : 0;
+
+  const fmt = d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+
+  container.innerHTML = `
+    <div class="week-info">
+      <div class="week-info-left">
+        <h3>Semana ${weekNum} &nbsp;·&nbsp; <span style="font-weight:400;color:var(--gray-500)">${fmt(dates[0])} – ${fmt(dates[6])}</span></h3>
+        <p>${total} tarefas · ${done} concluídas · ${total - done} pendentes</p>
+      </div>
+      <div class="week-progress-wrap">
+        <div class="week-progress-bar"><div class="week-progress-fill" style="width:${pct}%"></div></div>
+        <div class="week-progress-pct">${pct}%</div>
+      </div>
+    </div>
+    <div class="kanban-board">
+      ${DIAS.map((dia, i) => {
+        const isToday = dates[i].toDateString() === todayStr;
+        const tasks = state.tasks[taskKey(secId, weekNum, i)] || [];
+        return `
+          <div class="day-col">
+            <div class="day-header ${isToday ? 'today' : ''}">
+              ${DIAS_SHORT[i]}
+              <span class="day-num">${dates[i].getDate()}</span>
+            </div>
+            ${tasks.map(t => renderCard(t, secId, weekNum, i, s.color)).join('')}
+            <button class="add-card-btn" onclick="openAddModal('${secId}', ${i}, ${weekNum})">+ Adicionar</button>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderCard(task, secId, weekNum, dayIdx, color) {
+  const statusColors = { pendente:'#94a3b8', andamento:'#f59e0b', concluido:'#059669' };
+  const statusLabels = { pendente:'A fazer', andamento:'Em andamento', concluido:'Concluído' };
+  const typeClass = {Post:'badge-post', Release:'badge-release', Evento:'badge-evento',
+    Entrevista:'badge-entrevista', Crise:'badge-crise', Campanha:'badge-campanha',
+    Reunião:'badge-release'}[task.tipo] || 'badge-release';
+
+  const initials = (task.responsavel || 'N/A').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const opacity = task.status === 'concluido' ? 'opacity:.55;' : '';
+
+  return `<div class="task-card ${task.prioridade || 'media'}" style="${opacity}"
+    onclick="openDetail('${secId}', ${weekNum}, ${dayIdx}, ${task.id})">
+    <div class="card-top">
+      <span class="badge ${typeClass}">${task.tipo}</span>
+      <span class="card-time">${task.horario || ''}</span>
+    </div>
+    <div class="card-title">${task.titulo}</div>
+    <div class="card-canal">📡 ${task.canal || ''}</div>
+    <div class="card-footer">
+      <div style="display:flex;align-items:center">
+        <span class="status-dot" style="background:${statusColors[task.status||'pendente']}"></span>
+        <span class="status-label">${statusLabels[task.status||'pendente']}</span>
+      </div>
+      <div class="avatar" title="${task.responsavel}">${initials}</div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════
+
+let _currentDetail = {};
+
+function openDetail(secId, weekNum, dayIdx, taskId) {
+  const tasks = state.tasks[taskKey(secId, weekNum, dayIdx)] || [];
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  _currentDetail = { secId, weekNum, dayIdx, taskId };
+
+  document.getElementById('modal-title').textContent = task.titulo;
+
+  const typeClass = {Post:'badge-post', Release:'badge-release', Evento:'badge-evento',
+    Entrevista:'badge-entrevista', Crise:'badge-crise', Campanha:'badge-campanha',
+    Reunião:'badge-release'}[task.tipo] || 'badge-release';
+  const prioClass = { alta:'badge-alta', media:'badge-media', baixa:'badge-baixa' }[task.prioridade] || 'badge-media';
+  const statusMap = { pendente:'🕐 A Fazer', andamento:'🔄 Em Andamento', concluido:'✅ Concluído' };
+
+  document.getElementById('modal-badges').innerHTML = `
+    <span class="badge ${typeClass}">${task.tipo}</span>
+    <span class="badge ${prioClass}">${task.prioridade?.toUpperCase()}</span>
+    <span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${statusMap[task.status||'pendente']}</span>
+  `;
+
+  const s = SECRETARIAS.find(x => x.id === secId);
+  const dates = getWeekDates(weekNum);
+  const dayDate = dates[dayIdx].toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'});
+
+  document.getElementById('modal-fields').innerHTML = `
+    <div class="modal-field"><label>Responsável</label><div class="val">👤 ${task.responsavel||'—'}</div></div>
+    <div class="modal-field"><label>Canal / Mídia</label><div class="val">📡 ${task.canal||'—'}</div></div>
+    <div class="modal-field"><label>Prazo</label><div class="val">⏰ ${task.horario||'—'}</div></div>
+    <div class="modal-field"><label>Aprovação</label><div class="val">✔️ ${task.aprovacao||'—'}</div></div>
+    <div class="modal-field"><label>Secretaria</label><div class="val">${s.icon} ${s.nome}</div></div>
+    <div class="modal-field"><label>Data</label><div class="val">📅 ${dayDate}</div></div>
+    ${task.hashtags ? `<div class="modal-field" style="grid-column:1/-1"><label>Pauta / Hashtags</label><div class="val" style="color:var(--blue)">${task.hashtags}</div></div>` : ''}
+  `;
+  document.getElementById('modal-desc-text').textContent = task.desc || 'Sem descrição.';
+
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function markDone() {
+  const { secId, weekNum, dayIdx, taskId } = _currentDetail;
+  const key = taskKey(secId, weekNum, dayIdx);
+  const task = (state.tasks[key]||[]).find(t => t.id === taskId);
+  if (task) {
+    task.status = task.status === 'concluido' ? 'pendente' : 'concluido';
+    saveTasks();
+    closeModal('detailModal');
+    renderBoard(secId, weekNum);
+    renderOverview();
+  }
+}
+
+function openAddModal(secId, dayIdx, weekNum) {
+  state.addTarget = { secId, dayIdx, weekNum };
+  // Reset form
+  ['f-titulo','f-responsavel','f-hashtags','f-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-horario').value = '09:00';
+  document.getElementById('addModal').classList.add('open');
+}
+
+function saveTask() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if (!titulo) { alert('Informe o título da tarefa.'); return; }
+
+  const { secId, dayIdx, weekNum } = state.addTarget;
+  const today = new Date().getDay();
+  const dayMap = [6,0,1,2,3,4,5];
+  const finalDay = dayIdx !== null ? dayIdx : dayMap[today];
+
+  addTask(secId, weekNum, finalDay, {
+    titulo,
+    tipo: document.getElementById('f-tipo').value,
+    canal: document.getElementById('f-canal').value,
+    prioridade: document.getElementById('f-prioridade').value,
+    horario: document.getElementById('f-horario').value,
+    responsavel: document.getElementById('f-responsavel').value,
+    aprovacao: document.getElementById('f-aprovacao').value,
+    hashtags: document.getElementById('f-hashtags').value,
+    desc: document.getElementById('f-desc').value,
+  });
+
+  closeModal('addModal');
+  renderBoard(secId, weekNum);
+  renderOverview();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) el.classList.remove('open');
+  });
+});
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+
+function switchTab(el) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const tabId = el.dataset.tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${tabId}`).classList.add('active');
+
+  if (tabId === 'visao-geral') {
+    renderOverview();
+  } else if (tabId === 'licitacoes') {
+    renderLicitacoes();
+  } else {
+    renderSecretaria(tabId);
+  }
+}
+
+function switchTabById(secId) {
+  const tab = document.querySelector(`[data-tab="${secId}"]`);
+  if (tab) switchTab(tab);
+}
+
+// ═══════════════════════════════════════════════
+//  CLOCK & DATE
+// ═══════════════════════════════════════════════
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('headerDate').textContent =
+    now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+
+  // Countdown: próxima segunda 08:00
+  const target = new Date();
+  target.setDate(target.getDate() + ((1 + 7 - target.getDay()) % 7 || 7));
+  target.setHours(8, 0, 0, 0);
+  const diff = target - now;
+  const days = Math.floor(diff / 86400000);
+  const hrs  = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cd-dias').textContent = String(days).padStart(2,'0');
+  document.getElementById('cd-hrs').textContent  = String(hrs).padStart(2,'0');
+  document.getElementById('cd-min').textContent  = String(mins).padStart(2,'0');
+  document.getElementById('cd-sec').textContent  = String(secs).padStart(2,'0');
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+
+seedData();
+seedLics();
+renderOverview();
+updateClock();
+setInterval(updateClock, 1000);
+
+// Expose to window so Firebase module callbacks can reach them
+window.state          = state;
+window.renderOverview = renderOverview;
+window.renderBoard    = renderBoard;
+window.renderLicitacoes = renderLicitacoes;
+window.buildAlertSections = buildAlertSections;
+window.taskKey        = taskKey;
+window.getCurrentWeek = getCurrentWeek;
+
+// ═══════════════════════════════════════════════
+//  LICITAÇÕES
+// ═══════════════════════════════════════════════
+
+function getLics() {
+  // Prefer Firebase live data, fall back to localStorage
+  if (window._fbLics !== undefined) return window._fbLics;
+  return JSON.parse(localStorage.getItem('pmLics') || '[]');
+}
+function saveLics(arr) {
+  localStorage.setItem('pmLics', JSON.stringify(arr));
+  if (window._fbReady && window._db) {
+    arr.forEach(l => {
+      window._db.collection("licitacoes").doc(String(l.id)).set({ ...l }).catch(console.error);
+    });
+  }
+}
+
+function seedLics() {
+  if (localStorage.getItem('pmLicSeeded')) return;
+  const lics = [
+    { id: 1001, nome: 'Asfalto da Vila Rural', data: '2026-03-24', valor: 3094631.60, status: 'agendada',   orgao: 'Paraná Cidades', sec: 'Obras / Infraestrutura', obs: 'Licitação marcada para abertura dos envelopes.' },
+    { id: 1002, nome: 'Asfalto Salto Bandeirantes', data: '2026-03-18', valor: 1841575.57, status: 'aguardando', orgao: 'Paraná Cidades', sec: 'Obras / Infraestrutura', obs: 'Licitação realizada. Aguardando liberação do Paraná Cidades para prosseguir.' },
+  ];
+  saveLics(lics);
+  localStorage.setItem('pmLicSeeded', '1');
+}
+
+function fmtBRL(v) {
+  return new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(v);
+}
+function fmtDate(str) {
+  if (!str) return '—';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+function dateClass(str) {
+  if (!str) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tom   = new Date(today); tom.setDate(tom.getDate()+1);
+  const d     = new Date(str+'T00:00:00');
+  if (d < today) return 'overdue';
+  if (d.toDateString() === today.toDateString()) return 'today';
+  if (d.toDateString() === tom.toDateString())   return 'future';
+  return 'future';
+}
+
+function renderLicitacoes(filter = 'todos') {
+  const page = document.getElementById('page-licitacoes');
+  const lics = getLics();
+  const filtered = filter === 'todos' ? lics : lics.filter(l => l.status === filter);
+
+  const total      = lics.length;
+  const agendadas  = lics.filter(l => l.status === 'agendada').length;
+  const aguardando = lics.filter(l => l.status === 'aguardando').length;
+  const concluidas = lics.filter(l => l.status === 'concluida').length;
+  const totalVal   = lics.reduce((a,l) => a + (l.valor||0), 0);
+
+  const filterBtns = [
+    { val:'todos',      label:'Todas',                cls:'' },
+    { val:'agendada',   label:'Agendadas',            cls:'f-agendada' },
+    { val:'aguardando', label:'Aguardando Externo',   cls:'f-aguardando' },
+    { val:'concluida',  label:'Concluídas',           cls:'f-concluida' },
+  ].map(f => `<button class="lic-filter-btn ${f.cls} ${filter===f.val?'active':''}"
+    onclick="renderLicitacoes('${f.val}')">${f.label}</button>`).join('');
+
+  const rows = filtered.length === 0
+    ? `<div class="lic-empty">Nenhuma licitação encontrada.</div>`
+    : filtered.map(l => {
+        const dc = dateClass(l.data);
+        const dcLabel = { overdue:'⚠ Vencida', today:'Hoje', future:'', '':'' }[dc];
+        return `<div class="lic-row" onclick="openLicDetail(${l.id})">
+          <div>
+            <div class="lic-row-title">${l.nome}</div>
+            <div class="lic-row-sub">${l.sec || '—'}</div>
+          </div>
+          <div class="lic-row-val">${fmtBRL(l.valor)}</div>
+          <div>
+            <div class="lic-row-date ${dc}">${fmtDate(l.data)} ${dcLabel ? `<span style="font-size:10px">${dcLabel}</span>` : ''}</div>
+          </div>
+          <div class="lic-row-organ">${l.orgao || '—'}</div>
+          <div><span class="lic-status ls-${l.status}">${statusLabel(l.status)}</span></div>
+          <div style="display:flex;gap:5px">
+            <button class="lic-action-btn" onclick="event.stopPropagation();openLicDetail(${l.id})">Ver</button>
+            <button class="lic-action-btn" style="color:var(--blue);border-color:var(--blue)" onclick="event.stopPropagation();openEditLic(${l.id})">✏️</button>
+            <button class="lic-action-btn" style="color:var(--red);border-color:var(--red)" onclick="event.stopPropagation();confirmDeleteLic(${l.id})">🗑️</button>
+          </div>
+        </div>`;
+      }).join('');
+
+  page.innerHTML = `
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">⚖️ Painel de Licitações</h2>
+        <p class="section-subtitle">Acompanhamento de processos licitatórios municipais</p>
+      </div>
+      <button class="btn btn-primary" onclick="openAddLic()">+ Nova Licitação</button>
+    </div>
+    <div class="lic-stats">
+      <div class="lic-stat"><div class="ls-label">Total de Processos</div><div class="ls-val">${total}</div><div class="ls-sub">licitações cadastradas</div></div>
+      <div class="lic-stat"><div class="ls-label">Agendadas</div><div class="ls-val" style="color:#0369a1">${agendadas}</div><div class="ls-sub">a realizar</div></div>
+      <div class="lic-stat"><div class="ls-label">Aguardando Externo</div><div class="ls-val" style="color:#9333ea">${aguardando}</div><div class="ls-sub">pendentes de órgão</div></div>
+      <div class="lic-stat"><div class="ls-label">Volume Total</div><div class="ls-val" style="color:var(--green);font-size:15px">${fmtBRL(totalVal)}</div><div class="ls-sub">${concluidas} concluída(s)</div></div>
+    </div>
+    <div class="lic-toolbar">
+      <div class="lic-filters">${filterBtns}</div>
+    </div>
+    <div class="lic-table">
+      <div class="lic-table-header">
+        <div>Objeto / Secretaria</div><div>Valor</div><div>Data</div>
+        <div>Órgão</div><div>Status</div><div></div>
+      </div>
+      ${rows}
+    </div>
+  `;
+}
+
+function statusLabel(s) {
+  return { agendada:'📅 Agendada', aguardando:'⏳ Aguardando Externo', concluida:'✅ Concluída' }[s] || s;
+}
+
+let _currentLicId = null;
+function openLicDetail(id) {
+  const lics = getLics();
+  const l = lics.find(x => x.id === id);
+  if (!l) return;
+  _currentLicId = id;
+
+  document.getElementById('lic-modal-title').textContent = l.nome;
+  document.getElementById('lic-modal-badges').innerHTML =
+    `<span class="lic-status ls-${l.status}">${statusLabel(l.status)}</span>
+     ${l.sec ? `<span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${l.sec}</span>` : ''}`;
+
+  const dc = dateClass(l.data);
+  const dcColors = { overdue:'color:var(--red)', today:'color:var(--orange)', future:'color:var(--blue)', '':'' };
+
+  document.getElementById('lic-modal-fields').innerHTML = `
+    <div class="modal-field"><label>Valor</label><div class="val" style="color:var(--green);font-size:16px">${fmtBRL(l.valor)}</div></div>
+    <div class="modal-field"><label>Data da Licitação</label><div class="val" style="${dcColors[dc]}">${fmtDate(l.data)}</div></div>
+    <div class="modal-field"><label>Órgão Responsável</label><div class="val">${l.orgao||'—'}</div></div>
+    <div class="modal-field"><label>Secretaria</label><div class="val">${l.sec||'—'}</div></div>
+  `;
+
+  document.getElementById('lic-modal-obs').textContent = l.obs || 'Sem observações.';
+
+  document.getElementById('lic-status-btns').innerHTML =
+    ['agendada','aguardando','concluida'].map(s =>
+      `<button class="scb ${s} ${l.status===s?'':'opacity:.6'}" onclick="changeLicStatus(${id},'${s}')">${statusLabel(s)}</button>`
+    ).join('');
+
+  document.getElementById('licModal').classList.add('open');
+}
+
+function changeLicStatus(id, newStatus) {
+  if (window._fbReady && window._db) {
+    window._db.collection("licitacoes").doc(String(id)).update({ status: newStatus }).catch(console.error);
+  }
+  const lics = JSON.parse(localStorage.getItem('pmLics') || '[]');
+  const l = lics.find(x => x.id === id);
+  if (l) { l.status = newStatus; localStorage.setItem('pmLics', JSON.stringify(lics)); }
+  closeModal('licModal');
+  renderLicitacoes();
+}
+
+function openAddLic() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('lf-data').value = today;
+  ['lf-nome','lf-valor','lf-orgao','lf-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lf-status').value = 'agendada';
+  document.getElementById('lf-sec').value = '';
+  document.getElementById('lf-edit-id').value = '';
+  document.getElementById('addLicModalTitle').textContent = 'Nova Licitação';
+  document.getElementById('addLicModal').classList.add('open');
+}
+
+function openEditLic(id) {
+  const lics = getLics();
+  const l = lics.find(x => x.id == id);
+  if (!l) return;
+  document.getElementById('lf-edit-id').value = id;
+  document.getElementById('lf-nome').value    = l.nome || '';
+  document.getElementById('lf-data').value    = l.data || '';
+  // Format value back to Brazilian for display
+  if (l.valor) {
+    const parts = l.valor.toFixed(2).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    document.getElementById('lf-valor').value = parts.join(',');
+  } else {
+    document.getElementById('lf-valor').value = '';
+  }
+  document.getElementById('lf-status').value  = l.status || 'agendada';
+  document.getElementById('lf-orgao').value   = l.orgao || '';
+  document.getElementById('lf-sec').value     = l.sec || '';
+  document.getElementById('lf-obs').value     = l.obs || '';
+  document.getElementById('addLicModalTitle').textContent = 'Editar Licitação';
+  document.getElementById('addLicModal').classList.add('open');
+}
+
+function openEditLicFromDetail() {
+  closeModal('licModal');
+  openEditLic(_currentLicId);
+}
+
+function confirmDeleteLic(id) {
+  const lics = getLics();
+  const l = lics.find(x => x.id == id);
+  if (!l) return;
+  if (!confirm(\`Excluir a licitação "\${l.nome}"?\n\nEssa ação não pode ser desfeita.\`)) return;
+  deleteLic(id);
+}
+
+function confirmDeleteLicFromDetail() {
+  closeModal('licModal');
+  confirmDeleteLic(_currentLicId);
+}
+
+function deleteLic(id) {
+  if (window._fbReady && window._db) {
+    window._db.collection("licitacoes").doc(String(id)).delete().catch(console.error);
+  }
+  const lics = JSON.parse(localStorage.getItem('pmLics') || '[]').filter(x => x.id != id);
+  localStorage.setItem('pmLics', JSON.stringify(lics));
+  if (window._fbLics) window._fbLics = window._fbLics.filter(x => x.id != id);
+  renderLicitacoes();
+}
+
+function saveLic() {
+  const nome = document.getElementById('lf-nome').value.trim();
+  const data = document.getElementById('lf-data').value;
+  // Handle Brazilian format: "3.094.631,60" → 3094631.60
+  let valorStr = document.getElementById('lf-valor').value.trim();
+  if (valorStr.includes(',')) {
+    valorStr = valorStr.replace(/\./g, '').replace(',', '.');
+  } else {
+    valorStr = valorStr.replace(/[^0-9.]/g, '');
+  }
+  const valor = parseFloat(valorStr) || 0;
+  if (!nome || !data) { alert('Informe nome e data.'); return; }
+
+  const editId = document.getElementById('lf-edit-id').value;
+  const payload = {
+    nome, data, valor,
+    status: document.getElementById('lf-status').value,
+    orgao:  document.getElementById('lf-orgao').value.trim(),
+    sec:    document.getElementById('lf-sec').value,
+    obs:    document.getElementById('lf-obs').value.trim(),
+  };
+
+  if (editId) {
+    // UPDATE existing
+    payload.id = Number(editId);
+    if (window._fbReady && window._db) {
+      window._db.collection("licitacoes").doc(String(editId)).set(payload).catch(console.error);
+    }
+    const lics = JSON.parse(localStorage.getItem('pmLics') || '[]');
+    const idx = lics.findIndex(x => x.id == editId);
+    if (idx >= 0) lics[idx] = payload; else lics.push(payload);
+    localStorage.setItem('pmLics', JSON.stringify(lics));
+    if (window._fbLics) {
+      const fi = window._fbLics.findIndex(x => x.id == editId);
+      if (fi >= 0) window._fbLics[fi] = payload; else window._fbLics.push(payload);
+    }
+  } else {
+    // CREATE new
+    payload.id = Date.now();
+    const lics = getLics();
+    lics.push(payload);
+    saveLics(lics);
+  }
+
+  closeModal('addLicModal');
+  renderLicitacoes();
+}
+
+// ═══════════════════════════════════════════════
+//  ALERT / DAILY POPUP
+// ═══════════════════════════════════════════════
+
+const MOTIVACIONAIS = [
+  { frase: "O trabalho público bem feito é o maior serviço que se pode prestar à comunidade.", autor: "Princípio do Serviço Público" },
+  { frase: "Planejamento não é prever o futuro. É criar as condições para que o futuro desejado aconteça.", autor: "Peter Drucker" },
+  { frase: "A excelência não é um destino, é uma jornada contínua que nunca termina.", autor: "Brian Tracy" },
+  { frase: "Toda grande conquista começa com a decisão de tentar.", autor: "Gail Devers" },
+  { frase: "O segredo do progresso é começar. O segredo de começar é dividir tarefas complexas em pequenas ações.", autor: "Mark Twain" },
+  { frase: "Nada é particularmente difícil se você dividir em pequenos trabalhos.", autor: "Henry Ford" },
+  { frase: "Administrar é fazer as coisas certas. Liderar é fazer as coisas certas para as pessoas certas.", autor: "Peter Drucker" },
+  { frase: "O sucesso é a soma de pequenos esforços repetidos dia após dia.", autor: "Robert Collier" },
+  { frase: "Qualidade não é um ato, é um hábito.", autor: "Aristóteles" },
+  { frase: "Servir bem é mais do que uma obrigação — é um privilégio.", autor: "Ética do Servidor Público" },
+  { frase: "Uma equipe unida transforma visão em realidade.", autor: "Princípio da Gestão Pública" },
+  { frase: "Transparência e dedicação são os pilares de uma gestão que transforma vidas.", autor: "Valores da Gestão Municipal" },
+  { frase: "O presente é o resultado do planejamento de ontem. O amanhã começa hoje.", autor: "Provérbio de Gestão" },
+  { frase: "Comunicar bem é tão importante quanto agir bem. A sociedade precisa saber o que está sendo feito por ela.", autor: "Comunicação Pública" },
+  { frase: "Grandes realizações não vêm do trabalho de um só, mas da sinergia de toda a equipe.", autor: "Trabalho em Equipe" },
+];
+
+function getDailyMotiv() {
+  const day = new Date().getDay() + new Date().getDate();
+  return MOTIVACIONAIS[day % MOTIVACIONAIS.length];
+}
+
+function buildAlertSections() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tom   = new Date(today); tom.setDate(tom.getDate()+1);
+  const lics  = getLics();
+  const w     = getCurrentWeek();
+  const todayIdx = [6,0,1,2,3,4,5][new Date().getDay()];
+
+  // Licitações hoje
+  const licHoje = lics.filter(l => {
+    const d = new Date(l.data + 'T00:00:00');
+    return d.toDateString() === today.toDateString() && l.status !== 'concluida';
+  });
+
+  // Licitações amanhã
+  const licAmanha = lics.filter(l => {
+    const d = new Date(l.data + 'T00:00:00');
+    return d.toDateString() === tom.toDateString() && l.status !== 'concluida';
+  });
+
+  // Aguardando externo
+  const licExterno = lics.filter(l => l.status === 'aguardando');
+
+  // Tarefas de comunicação em atraso (dias anteriores, status != concluido)
+  let atrasadas = [];
+  for (let d = 0; d < todayIdx; d++) {
+    const tasks = (state.tasks[taskKey('comunicacao', w, d)] || []).filter(t => t.status !== 'concluido');
+    tasks.forEach(t => atrasadas.push({ ...t, diaIdx: d }));
+  }
+
+  let sections = '';
+  let totalAlertas = licHoje.length + licAmanha.length + licExterno.length + atrasadas.length;
+
+  if (licHoje.length > 0) {
+    sections += `<div class="alert-section">
+      <h4>🔴 Licitações HOJE</h4>
+      ${licHoje.map(l => `
+        <div class="alert-item">
+          <div class="alert-item-icon" style="background:#fef3c7">⚖️</div>
+          <div class="alert-item-body">
+            <div class="alert-item-title">${l.nome}</div>
+            <div class="alert-item-sub">${fmtBRL(l.valor)} · ${l.orgao||'Sem órgão'}</div>
+          </div>
+          <span class="alert-item-tag tag-hoje">Hoje</span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  if (licAmanha.length > 0) {
+    sections += `<div class="alert-section">
+      <h4>🔵 Licitações Amanhã</h4>
+      ${licAmanha.map(l => `
+        <div class="alert-item">
+          <div class="alert-item-icon" style="background:#dbeafe">⚖️</div>
+          <div class="alert-item-body">
+            <div class="alert-item-title">${l.nome}</div>
+            <div class="alert-item-sub">${fmtBRL(l.valor)} · ${l.orgao||'Sem órgão'}</div>
+          </div>
+          <span class="alert-item-tag tag-amanha">Amanhã</span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  if (licExterno.length > 0) {
+    sections += `<div class="alert-section">
+      <h4>⏳ Aguardando Órgão Externo</h4>
+      ${licExterno.map(l => `
+        <div class="alert-item">
+          <div class="alert-item-icon" style="background:#ede9fe">🏛️</div>
+          <div class="alert-item-body">
+            <div class="alert-item-title">${l.nome}</div>
+            <div class="alert-item-sub">${l.orgao||'—'} · ${fmtBRL(l.valor)}</div>
+          </div>
+          <span class="alert-item-tag tag-externo">Pendente</span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  if (atrasadas.length > 0) {
+    const dias = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+    sections += `<div class="alert-section">
+      <h4>⚠️ Tarefas de Comunicação em Atraso</h4>
+      ${atrasadas.slice(0,5).map(t => `
+        <div class="alert-item">
+          <div class="alert-item-icon" style="background:#fee2e2">📢</div>
+          <div class="alert-item-body">
+            <div class="alert-item-title">${t.titulo}</div>
+            <div class="alert-item-sub">${dias[t.diaIdx]} · ${t.canal||''} · ${t.responsavel||''}</div>
+          </div>
+          <span class="alert-item-tag tag-atraso">Atrasado</span>
+        </div>`).join('')}
+      ${atrasadas.length > 5 ? `<div style="font-size:12px;color:var(--gray-400);padding:6px 0">+${atrasadas.length-5} outras tarefas em atraso</div>` : ''}
+    </div>`;
+  }
+
+  if (totalAlertas === 0) {
+    sections = `<div class="alert-empty">🎉 Tudo em dia! Nenhum alerta para hoje.</div>`;
+  }
+
+  return sections;
+}
+
+function openDailyAlert() {
+  const motiv = getDailyMotiv();
+  const now   = new Date();
+  document.getElementById('alert-motiv').textContent  = `"${motiv.frase}"`;
+  document.getElementById('alert-author').textContent = `— ${motiv.autor}`;
+  const dateFmt = now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('alert-date-pill').textContent = '📅 ' + dateFmt.charAt(0).toUpperCase() + dateFmt.slice(1);
+  document.getElementById('alert-sections').innerHTML = buildAlertSections();
+  document.getElementById('alertModal').classList.add('open');
+}
+
+// Show alert once per day
+const todayKey = 'pmAlertShown_' + new Date().toDateString();
+if (!sessionStorage.getItem(todayKey)) {
+  sessionStorage.setItem(todayKey, '1');
+  setTimeout(openDailyAlert, 700);
+}
+
+
+// ── Sync status indicator ──────────────────────
+function updateSyncIndicator(ok) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (!dot || !lbl) return;
+  if (ok) {
+    dot.style.background = '#22c55e';
+    lbl.textContent = 'Sincronizado ✓';
+  } else {
+    dot.style.background = '#f59e0b';
+    lbl.textContent = 'Offline';
+  }
+}
+window.addEventListener('online',  () => updateSyncIndicator(true));
+window.addEventListener('offline', () => updateSyncIndicator(false));
+setTimeout(() => {
+  if (window._fbReady) updateSyncIndicator(true);
+  else updateSyncIndicator(false);
+}, 2000);
+
+</script>
+</body>
+</html>

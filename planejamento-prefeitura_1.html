@@ -685,34 +685,35 @@
   .alert-header {
     background: linear-gradient(135deg, var(--navy) 0%, #1e3a6e 100%);
     border-radius: 16px 16px 0 0;
-    padding: 24px 24px 20px;
-    position: relative;
-  }
-  .alert-header .motiv {
-    font-family: 'DM Serif Display', serif;
-    font-size: 17px;
-    color: var(--white);
-    line-height: 1.45;
-    font-style: italic;
-    margin-bottom: 6px;
-  }
-  .alert-header .motiv-author {
-    font-size: 11px;
-    color: var(--gold);
-    font-weight: 600;
-    letter-spacing: .5px;
-    text-transform: uppercase;
+    padding: 20px 24px 18px;
   }
   .alert-header .date-pill {
-    position: absolute;
-    top: 20px; right: 20px;
+    display: inline-block;
     background: rgba(255,255,255,.12);
     border: 1px solid rgba(255,255,255,.18);
     border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12px;
+    padding: 3px 12px;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: .3px;
+    text-transform: capitalize;
+    margin-bottom: 10px;
+  }
+  .alert-header .motiv {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
     color: var(--white);
-    font-weight: 500;
+    line-height: 1.5;
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+  .alert-header .motiv-author {
+    font-size: 11px;
+    color: rgba(255,255,255,.55);
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
   }
   .alert-section {
     padding: 18px 22px 4px;
@@ -1162,6 +1163,8 @@ console.log("🔥 Firebase conectado ao Firestore!");
       </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-primary" onclick="openEditLicFromDetail()">✏️ Editar</button>
+      <button class="btn" style="background:var(--red-light);color:var(--red)" onclick="confirmDeleteLicFromDetail()">🗑️ Excluir</button>
       <button class="btn btn-ghost" onclick="closeModal('licModal')">Fechar</button>
     </div>
   </div>
@@ -1171,7 +1174,7 @@ console.log("🔥 Firebase conectado ao Firestore!");
 <div class="modal-overlay" id="addLicModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>Nova Licitação</h2>
+      <h2 id="addLicModalTitle">Nova Licitação</h2>
       <button class="modal-close" onclick="closeModal('addLicModal')">✕</button>
     </div>
     <div class="modal-body">
@@ -1219,6 +1222,7 @@ console.log("🔥 Firebase conectado ao Firestore!");
       </div>
     </div>
     <div class="modal-footer">
+      <input type="hidden" id="lf-edit-id" value="">
       <button class="btn btn-primary" onclick="saveLic()">Salvar Licitação</button>
       <button class="btn btn-ghost" onclick="closeModal('addLicModal')">Cancelar</button>
     </div>
@@ -1863,7 +1867,11 @@ function renderLicitacoes(filter = 'todos') {
           </div>
           <div class="lic-row-organ">${l.orgao || '—'}</div>
           <div><span class="lic-status ls-${l.status}">${statusLabel(l.status)}</span></div>
-          <div><button class="lic-action-btn" onclick="event.stopPropagation();openLicDetail(${l.id})">Detalhes</button></div>
+          <div style="display:flex;gap:5px">
+            <button class="lic-action-btn" onclick="event.stopPropagation();openLicDetail(${l.id})">Ver</button>
+            <button class="lic-action-btn" style="color:var(--blue);border-color:var(--blue)" onclick="event.stopPropagation();openEditLic(${l.id})">✏️</button>
+            <button class="lic-action-btn" style="color:var(--red);border-color:var(--red)" onclick="event.stopPropagation();confirmDeleteLic(${l.id})">🗑️</button>
+          </div>
         </div>`;
       }).join('');
 
@@ -1950,28 +1958,104 @@ function openAddLic() {
   ['lf-nome','lf-valor','lf-orgao','lf-obs'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('lf-status').value = 'agendada';
   document.getElementById('lf-sec').value = '';
+  document.getElementById('lf-edit-id').value = '';
+  document.getElementById('addLicModalTitle').textContent = 'Nova Licitação';
   document.getElementById('addLicModal').classList.add('open');
+}
+
+function openEditLic(id) {
+  const lics = getLics();
+  const l = lics.find(x => x.id == id);
+  if (!l) return;
+  document.getElementById('lf-edit-id').value = id;
+  document.getElementById('lf-nome').value    = l.nome || '';
+  document.getElementById('lf-data').value    = l.data || '';
+  // Format value back to Brazilian for display
+  document.getElementById('lf-valor').value   = l.valor ? l.valor.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+  document.getElementById('lf-status').value  = l.status || 'agendada';
+  document.getElementById('lf-orgao').value   = l.orgao || '';
+  document.getElementById('lf-sec').value     = l.sec || '';
+  document.getElementById('lf-obs').value     = l.obs || '';
+  document.getElementById('addLicModalTitle').textContent = 'Editar Licitação';
+  document.getElementById('addLicModal').classList.add('open');
+}
+
+function openEditLicFromDetail() {
+  closeModal('licModal');
+  openEditLic(_currentLicId);
+}
+
+function confirmDeleteLic(id) {
+  const lics = getLics();
+  const l = lics.find(x => x.id == id);
+  if (!l) return;
+  if (!confirm(\`Excluir a licitação "\${l.nome}"?\n\nEssa ação não pode ser desfeita.\`)) return;
+  deleteLic(id);
+}
+
+function confirmDeleteLicFromDetail() {
+  closeModal('licModal');
+  confirmDeleteLic(_currentLicId);
+}
+
+function deleteLic(id) {
+  // Remove from Firebase
+  if (window._fbReady) {
+    const { doc, deleteDoc } = window._fsLib;
+    deleteDoc(doc(window._db, "licitacoes", String(id))).catch(console.error);
+  }
+  // Remove from localStorage
+  const lics = JSON.parse(localStorage.getItem('pmLics') || '[]').filter(x => x.id != id);
+  localStorage.setItem('pmLics', JSON.stringify(lics));
+  if (window._fbLics) window._fbLics = window._fbLics.filter(x => x.id != id);
+  renderLicitacoes();
 }
 
 function saveLic() {
   const nome = document.getElementById('lf-nome').value.trim();
   const data = document.getElementById('lf-data').value;
-  const valorRaw = document.getElementById('lf-valor').value.replace(/[^0-9,\.]/g,'').replace(',','.');
-  const valor = parseFloat(valorRaw) || 0;
+  // Handle Brazilian format: "3.094.631,60" → 3094631.60
+  let valorStr = document.getElementById('lf-valor').value.trim();
+  if (valorStr.includes(',')) {
+    valorStr = valorStr.replace(/\./g, '').replace(',', '.');
+  } else {
+    valorStr = valorStr.replace(/[^0-9.]/g, '');
+  }
+  const valor = parseFloat(valorStr) || 0;
   if (!nome || !data) { alert('Informe nome e data.'); return; }
 
-  const lics = getLics();
-  lics.push({
-    id: Date.now(),
-    nome,
-    data,
-    valor,
+  const editId = document.getElementById('lf-edit-id').value;
+  const payload = {
+    nome, data, valor,
     status: document.getElementById('lf-status').value,
     orgao:  document.getElementById('lf-orgao').value.trim(),
     sec:    document.getElementById('lf-sec').value,
     obs:    document.getElementById('lf-obs').value.trim(),
-  });
-  saveLics(lics);
+  };
+
+  if (editId) {
+    // UPDATE existing
+    payload.id = Number(editId);
+    if (window._fbReady) {
+      const { doc, setDoc } = window._fsLib;
+      setDoc(doc(window._db, "licitacoes", String(editId)), payload).catch(console.error);
+    }
+    const lics = JSON.parse(localStorage.getItem('pmLics') || '[]');
+    const idx = lics.findIndex(x => x.id == editId);
+    if (idx >= 0) lics[idx] = payload; else lics.push(payload);
+    localStorage.setItem('pmLics', JSON.stringify(lics));
+    if (window._fbLics) {
+      const fi = window._fbLics.findIndex(x => x.id == editId);
+      if (fi >= 0) window._fbLics[fi] = payload; else window._fbLics.push(payload);
+    }
+  } else {
+    // CREATE new
+    payload.id = Date.now();
+    const lics = getLics();
+    lics.push(payload);
+    saveLics(lics);
+  }
+
   closeModal('addLicModal');
   renderLicitacoes();
 }
@@ -2109,8 +2193,8 @@ function openDailyAlert() {
   const now   = new Date();
   document.getElementById('alert-motiv').textContent  = `"${motiv.frase}"`;
   document.getElementById('alert-author').textContent = `— ${motiv.autor}`;
-  document.getElementById('alert-date-pill').textContent =
-    now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' });
+  const dateFmt = now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('alert-date-pill').textContent = '📅 ' + dateFmt.charAt(0).toUpperCase() + dateFmt.slice(1);
   document.getElementById('alert-sections').innerHTML = buildAlertSections();
   document.getElementById('alertModal').classList.add('open');
 }

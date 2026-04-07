@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praxis Lex — Gestão Processual</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── LIGHT MODE CSS VARIABLES ── */
+:root {
+  /* Backgrounds */
+  --bg:       #F8FAFC;
+  --bg2:      #FFFFFF;
+  --bg3:      #F1F5F9;
+  --bg4:      #E8EEF4;
+  --bg5:      #DDE4ED;
+
+  /* Borders */
+  --border:   #E2E8F0;
+  --border2:  #CBD5E1;
+
+  /* Brand */
+  --primary:      #1B7360;
+  --primary2:     #145C4C;
+  --primary3:     #0E4539;
+  --primary-dim:  rgba(27,115,96,0.08);
+  --primary-mid:  rgba(27,115,96,0.14);
+
+  /* Text */
+  --text:     #0F172A;
+  --text2:    #1E293B;
+  --text3:    #64748B;
+  --text4:    #94A3B8;
+
+  /* Status */
+  --red:      #991B1B;
+  --red2:     #DC2626;
+  --red-dim:  rgba(220,38,38,0.1);
+  --red-bg:   rgba(220,38,38,0.06);
+
+  --green:    #1B7360;
+  --green2:   #15A077;
+  --green-dim:rgba(27,115,96,0.12);
+  --green-bg: rgba(27,115,96,0.07);
+
+  --amber:    #92400E;
+  --amber2:   #D97706;
+  --amber-dim:rgba(217,119,6,0.12);
+  --amber-bg: rgba(217,119,6,0.07);
+
+  --blue:     #1E40AF;
+  --blue2:    #2563EB;
+  --blue-dim: rgba(37,99,235,0.1);
+
+  /* Layout */
+  --sidebar:  256px;
+  --radius:   10px;
+  --radius2:  14px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --shadow-md: 0 4px 12px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04);
+  --shadow-lg: 0 8px 24px rgba(15,23,42,0.1), 0 4px 8px rgba(15,23,42,0.05);
+  --shadow-xl: 0 20px 48px rgba(15,23,42,0.12), 0 8px 16px rgba(15,23,42,0.06);
+}
+
+/* ── DARK MODE ── */
+[data-theme="dark"] {
+  --bg:       #09090B;
+  --bg2:      #0F1013;
+  --bg3:      #141418;
+  --bg4:      #1A1A1F;
+  --bg5:      #202028;
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.12);
+  --primary:      #2A9E84;
+  --primary2:     #22836D;
+  --primary3:     #1A6856;
+  --primary-dim:  rgba(42,158,132,0.12);
+  --primary-mid:  rgba(42,158,132,0.2);
+  --text:     #F4F4F5;
+  --text2:    #D1D5DB;
+  --text3:    #9CA3AF;
+  --text4:    #6B7280;
+  --red2:     #F87171;
+  --red-dim:  rgba(248,113,113,0.12);
+  --red-bg:   rgba(248,113,113,0.07);
+  --green2:   #34D399;
+  --green-dim:rgba(52,211,153,0.12);
+  --green-bg: rgba(52,211,153,0.07);
+  --amber2:   #FCD34D;
+  --amber-dim:rgba(252,211,77,0.12);
+  --amber-bg: rgba(252,211,77,0.07);
+  --blue2:    #60A5FA;
+  --blue-dim: rgba(96,165,250,0.12);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+  --shadow-xl: 0 20px 48px rgba(0,0,0,0.6);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: transform 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.4);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.open { display: block; }
+
+.logo {
+  padding: 28px 24px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.3px;
+}
+.logo-sub {
+  font-size: 9px;
+  color: var(--text4);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+
+.nav-section {
+  font-size: 8.5px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text4);
+  padding: 16px 24px 5px;
+  font-weight: 700;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  cursor: pointer;
+  color: var(--text3);
+  transition: all 0.15s ease;
+  position: relative;
+  font-size: 13px;
+  font-weight: 400;
+  border-left: 2px solid transparent;
+  user-select: none;
+  margin: 1px 8px;
+  border-radius: 8px;
+  border-left: none;
+}
+.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item.active {
+  color: var(--primary);
+  background: var(--primary-dim);
+  font-weight: 600;
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 6px; bottom: 6px;
+  width: 3px;
+  background: var(--primary);
+  border-radius: 0 3px 3px 0;
+}
+.nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--red2);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.user-area {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--bg3);
+}
+.user-avatar {
+  width: 34px; height: 34px;
+  background: var(--primary-dim);
+  border: 1px solid var(--primary-mid);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--primary);
+  flex-shrink: 0;
+  font-weight: 600;
+}
+.user-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.2; }
+.user-role { font-size: 11px; color: var(--text4); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+
+/* ── MAIN ── */
+.main {
+  margin-left: var(--sidebar);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 36px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.2px;
+}
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+.topbar-right { display: flex; gap: 8px; align-items: center; }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  letter-spacing: 0.1px;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover {
+  background: var(--primary2);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text3);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { background: var(--bg3); color: var(--text); border-color: var(--border); }
+.btn-danger {
+  background: var(--red-bg);
+  color: var(--red2);
+  border: 1px solid rgba(220,38,38,0.2);
+}
+.btn-sm { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+.btn-xs { padding: 5px 11px; font-size: 12px; border-radius: 7px; min-height: 30px; }
+.btn-green {
+  background: var(--green-bg);
+  color: var(--green2);
+  border: 1px solid var(--green-dim);
+}
+.btn-green:hover { background: var(--green-dim); }
+
+/* ── CONTENT ── */
+.content { padding: 32px 36px; flex: 1; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg2);
+}
+.card-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text4);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.card-body { padding: 4px 0; }
+
+.full-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.kpi {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 22px 20px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+.kpi.urgente { border-top: 2px solid var(--red2) !important; }
+.kpi.urgente::before { background: var(--red2); }
+.kpi.gold::before { background: var(--primary); }
+.kpi.gold { border-top: 2px solid var(--primary); }
+.kpi.green::before { background: var(--green2); }
+.kpi.green { border-top: 2px solid var(--green2); }
+.kpi.blue::before { background: var(--blue2); }
+.kpi.blue { border-top: 2px solid var(--blue2); }
+.kpi.neutral::before { background: var(--text4); }
+
+.kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.kpi-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text4);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 6px;
+}
+.kpi.urgente .kpi-value { color: var(--red2); }
+.kpi.gold .kpi-value { color: var(--primary); }
+.kpi.green .kpi-value { color: var(--green2); }
+.kpi.blue .kpi-value { color: var(--blue2); }
+.kpi.neutral .kpi-value { color: var(--text2); }
+.kpi-sub { font-size: 13px; color: var(--text3); font-weight: 400; }
+
+/* KPI urgente wide */
+.urgente-actions { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.urgente-action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--red-bg);
+  border: 1px solid rgba(220,38,38,0.12);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+  color: var(--text2);
+}
+.urgente-action-item:hover { background: var(--red-dim); color: var(--text); }
+.urgente-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.urgente-dot.red { background: var(--red2); }
+.urgente-dot.amber { background: var(--amber2); }
+
+/* ── DASH GRID ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── LIST ITEMS ── */
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 22px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.list-item:last-child { border-bottom: none; }
+.list-item:hover { background: var(--bg3); }
+
+.list-title { font-size: 15px; color: var(--text); font-weight: 600; line-height: 1.3; }
+.list-meta { font-size: 13px; color: var(--text3); margin-top: 3px; }
+.list-info { flex: 1; min-width: 0; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.badge-hoje    { background: rgba(220,38,38,0.1); color: #B91C1C; border: 1px solid rgba(220,38,38,0.2); }
+.badge-urgente { background: rgba(220,38,38,0.08); color: var(--red2); border: 1px solid rgba(220,38,38,0.15); }
+.badge-atencao { background: var(--amber-bg); color: var(--amber2); border: 1px solid var(--amber-dim); }
+.badge-ok      { background: var(--green-bg); color: var(--green2); border: 1px solid var(--green-dim); }
+.badge-pago    { background: var(--green-bg); color: var(--green2); border: 1px solid var(--green-dim); }
+.badge-pendente{ background: var(--amber-bg); color: var(--amber2); border: 1px solid var(--amber-dim); }
+.badge-vencido { background: var(--red-bg); color: var(--red2); border: 1px solid var(--red-dim); }
+.badge-ativo   { background: var(--green-bg); color: var(--green2); border: 1px solid var(--green-dim); }
+.badge-inativo { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
+.badge-inadimplente { background: var(--red-bg); color: var(--red2); border: 1px solid var(--red-dim); }
+.badge-aguardando { background: var(--amber-bg); color: var(--amber2); border: 1px solid var(--amber-dim); }
+.badge-arquivado  { background: var(--bg3); color: var(--text4); border: 1px solid var(--border); }
+
+/* ── ACTION BUTTONS ── */
+.action-group { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text4);
+  font-size: 14px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  transition: all 0.12s;
+}
+.action-btn:hover { background: var(--bg3); color: var(--text); }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left;
+  padding: 11px 18px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text4);
+  border-bottom: 2px solid var(--border);
+  font-weight: 700;
+  background: var(--bg3);
+}
+td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text2);
+  vertical-align: middle;
+}
+td.primary { color: var(--text); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #F8FAFC; }
+.mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text3); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 560px;
+  max-width: 95vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: translateY(16px);
+  transition: transform 0.2s;
+  box-shadow: var(--shadow-lg);
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg3);
+  border-radius: 16px 16px 0 0;
+}
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 600; color: var(--text);
+}
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 18px; width: 30px; height: 30px;
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.modal-close:hover { background: var(--bg4); color: var(--text); }
+.modal-body { padding: 22px 24px; }
+.modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 8px;
+  background: var(--bg3);
+  border-radius: 0 0 16px 16px;
+}
+
+/* ── FORM ── */
+.form-group { margin-bottom: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label {
+  display: block;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+input, select, textarea {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  transition: all 0.15s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-dim);
+}
+textarea { resize: vertical; min-height: 80px; }
+select option { background: var(--bg2); }
+
+/* ── IA CHAT ── */
+.ia-wrap { max-width: 860px; }
+.ia-suggestions {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.ia-suggestion {
+  padding: 9px 16px;
+  background: var(--primary-dim);
+  border: 1px solid var(--primary-mid);
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+.ia-suggestion:hover { background: var(--primary-mid); }
+.ia-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.ia-header {
+  padding: 12px 18px;
+  background: var(--primary-dim);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.ia-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green2); }
+.ia-msgs {
+  padding: 16px;
+  min-height: 320px;
+  max-height: 460px;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+  background: var(--bg);
+}
+.ia-msg {
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  line-height: 1.75;
+  max-width: 88%;
+}
+.ia-msg.user {
+  background: var(--primary);
+  color: #FFFFFF;
+  align-self: flex-end;
+  font-weight: 500;
+}
+.ia-msg.assistant {
+  background: var(--bg2);
+  color: var(--text2);
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.ia-msg.loading { color: var(--text3); font-style: italic; background: var(--bg2); border: 1px solid var(--border); align-self: flex-start; }
+.ia-input-row {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+  background: var(--bg3);
+}
+.ia-input { flex: 1; background: var(--bg2); }
+.ia-send {
+  background: var(--primary);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+.ia-send:hover { background: var(--primary2); transform: translateY(-1px); box-shadow: var(--shadow); }
+.ia-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ── CHIPS ── */
+.chips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text3);
+  transition: all 0.15s;
+  user-select: none;
+}
+.chip:hover { border-color: var(--primary-mid); color: var(--text2); background: var(--bg3); }
+.chip.on { border-color: var(--primary); background: var(--primary-dim); color: var(--primary); }
+.chip-check { font-size: 12px; }
+
+/* ── UPLOAD ── */
+.upload-zone {
+  border: 2px dashed var(--border2);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--bg3);
+}
+.upload-zone:hover { border-color: var(--primary); background: var(--primary-dim); }
+.upload-zone.has-file { border-color: var(--green2); background: var(--green-bg); }
+
+/* ── DOCS ── */
+.doc-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.doc-filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: 'DM Sans', sans-serif;
+}
+.doc-filter-btn.active, .doc-filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-dim);
+}
+.doc-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 22px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: all 0.12s;
+}
+.doc-item:hover { background: var(--bg3); }
+.doc-item:last-child { border-bottom: none; }
+.doc-icon {
+  font-size: 18px; width: 36px; height: 36px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── TIMELINE ── */
+.tl { padding: 16px 20px; }
+.tl-item { display: flex; gap: 14px; padding-bottom: 20px; position: relative; }
+.tl-item::before {
+  content: ''; position: absolute; left: 15px; top: 28px; bottom: 0;
+  width: 1px; background: var(--border);
+}
+.tl-item:last-child::before { display: none; }
+.tl-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0; z-index: 1;
+}
+.tl-dot.gold { border-color: var(--primary); background: var(--primary-dim); }
+.tl-body { flex: 1; padding-top: 4px; }
+.tl-title { font-size: 13px; color: var(--text); font-weight: 600; }
+.tl-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* ── WELCOME POPUP ── */
+.welcome-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.3s ease 0.2s forwards;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+.welcome-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 560px;
+  max-width: 95vw;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(20px);
+  animation: slideUp 0.3s ease 0.2s forwards;
+}
+@keyframes slideUp { to { transform: translateY(0); } }
+.welcome-header {
+  padding: 32px 32px 26px;
+  background: linear-gradient(135deg, #F0FDF9 0%, #FAFCFF 100%);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.welcome-header::after { display: none; }
+.welcome-tag {
+  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--primary); font-weight: 700; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.welcome-tag::before {
+  content: '';
+  width: 20px; height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+  display: inline-block;
+}
+.welcome-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; color: var(--text); line-height: 1.6; font-style: italic;
+  font-weight: 400; letter-spacing: 0.01em;
+}
+.welcome-author { font-size: 13px; color: var(--text3); margin-top: 12px; font-weight: 400; }
+.welcome-body { padding: 24px 32px; }
+.welcome-section-lbl {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text3); font-weight: 700; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.welcome-section-lbl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.welcome-prazo {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  margin-bottom: 8px; cursor: pointer; transition: all 0.15s;
+}
+.welcome-prazo:hover { border-color: var(--primary); background: var(--primary-dim); }
+.welcome-prazo-title { font-size: 13px; color: var(--text); font-weight: 600; }
+.welcome-prazo-meta { font-size: 13px; color: var(--text3); margin-top: 4px; }
+.welcome-prazo-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  padding: 6px 13px; border-radius: 8px; flex-shrink: 0; letter-spacing: 0.04em;
+  min-width: 68px; text-align: center;
+}
+.welcome-prazo-badge.hoje    { background: rgba(220,38,38,0.1); color: #B91C1C; border: 1px solid rgba(220,38,38,0.2); }
+.welcome-prazo-badge.urgente { background: var(--red-bg); color: var(--red2); border: 1px solid var(--red-dim); }
+.welcome-prazo-badge.atencao { background: var(--amber-bg); color: var(--amber2); border: 1px solid var(--amber-dim); }
+.welcome-prazo-badge.ok      { background: var(--green-bg); color: var(--green2); border: 1px solid var(--green-dim); }
+.welcome-footer {
+  padding: 18px 32px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg3);
+}
+.welcome-date { font-size: 13px; color: var(--text3); }
+.welcome-btn {
+  background: var(--primary);
+  color: #FFFFFF;
+  border: none; border-radius: 10px;
+  padding: 12px 28px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(27,115,96,0.2);
+}
+.welcome-btn:hover { background: var(--primary2); box-shadow: var(--shadow); transform: translateY(-1px); }
+
+/* ── NOTIF ── */
+.notif {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 13px 18px;
+  font-size: 13px; color: var(--text);
+  z-index: 500; max-width: 300px;
+  opacity: 0; transform: translateY(10px);
+  transition: all 0.3s; pointer-events: none;
+  box-shadow: var(--shadow-lg);
+}
+.notif.show { opacity: 1; transform: translateY(0); }
+.notif-label { font-weight: 700; color: var(--primary); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
+
+/* ── EMPTY ── */
+.empty { text-align: center; padding: 48px 20px; color: var(--text3); }
+.empty-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.4; }
+.empty-text { font-size: 13px; }
+
+/* ── MISC ── */
+.fin-totals { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+.search-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+.search-bar input { max-width: 280px; }
+.cfg-section-title {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--primary); font-weight: 700; margin-bottom: 14px; opacity: 0.9;
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); width: 280px; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .hamburger { display: block; }
+  .topbar { padding: 0 20px; }
+  .content { padding: 20px 16px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .dash-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .fin-totals { grid-template-columns: 1fr; }
+}
+
+[data-theme='dark'] .topbar { background: rgba(9,9,11,0.97) !important; border-bottom-color: rgba(255,255,255,0.06); }
+[data-theme='dark'] .sidebar { background: linear-gradient(180deg, #0A0A0D 0%, #0E0E12 100%); border-right-color: rgba(255,255,255,0.06); }
+[data-theme='dark'] .user-area { background: rgba(0,0,0,0.2); }
+[data-theme='dark'] input, [data-theme='dark'] select, [data-theme='dark'] textarea { background: #141418; }
+[data-theme='dark'] .modal { background: #141418; }
+[data-theme='dark'] .modal-overlay { background: rgba(0,0,0,0.75); }
+[data-theme='dark'] .welcome-box { background: #141418; }
+[data-theme='dark'] .ia-input { background: #0F1013; }
+[data-theme='dark'] .notif { background: #141418; }
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo">
+    <div class="logo-mark">Praxis Lex</div>
+    <div class="logo-sub">Gestão Processual</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Principal</div>
+    <div class="nav-item active" onclick="go('dashboard')">
+      <span class="nav-icon">◈</span> Visão Geral
+      <span class="nav-badge" id="nb-urgentes" style="display:none">0</span>
+    </div>
+    <div class="nav-item" onclick="go('clientes')">
+      <span class="nav-icon">◉</span> Clientes
+    </div>
+    <div class="nav-item" onclick="go('processos')">
+      <span class="nav-icon">◎</span> Processos
+    </div>
+    <div class="nav-section">Financeiro</div>
+    <div class="nav-item" onclick="go('honorarios')">
+      <span class="nav-icon">◇</span> Honorários
+    </div>
+    <div class="nav-section">Ferramentas</div>
+    <div class="nav-item" onclick="go('documentos')">
+      <span class="nav-icon">◻</span> Documentos
+    </div>
+    <div class="nav-item" onclick="go('ia')">
+      <span class="nav-icon">✦</span> Consultoria IA
+    </div>
+    <div class="nav-item" onclick="go('config')">
+      <span class="nav-icon">⚙</span> Configurações
+    </div>
+  </nav>
+  <div class="user-area">
+    <div class="user-avatar" id="userInitials">DR</div>
+    <div>
+      <div class="user-name" id="userName">Dr. Rafael</div>
+      <div class="user-role" id="userRole">Advogado responsável</div>
+    </div>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="page-title" id="pageTitle">Visão Geral</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeBtn" title="Alternar tema">🌙</button>
+      <button class="btn btn-ghost btn-sm" onclick="showNotif('Sem novos alertas no momento.')">🔔</button>
+      <button class="btn btn-primary btn-sm" id="topAction" onclick="openModal('processo')">Novo processo</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="panel active" id="panel-dashboard">
+
+      <!-- KPI GRID -->
+      <div class="kpi-grid" id="kpi-grid">
+        <!-- Ações urgentes -->
+        <div class="kpi urgente kpi-urgente-wide" onclick="go('processos')" title="Ver processos urgentes">
+          <div class="kpi-label">Ações Urgentes</div>
+          <div class="kpi-value" id="kpi-urgentes">0</div>
+          <div class="kpi-sub">prazos críticos hoje</div>
+          <div class="urgente-actions" id="urgente-actions">
+            <div class="urgente-action-item">
+              <div class="urgente-dot red"></div>
+              <span>Nenhuma ação urgente no momento</span>
+            </div>
+          </div>
+        </div>
+        <!-- Prazos críticos -->
+        <div class="kpi gold" onclick="go('processos')" title="Ver prazos">
+          <div class="kpi-label">Prazos Críticos</div>
+          <div class="kpi-value" id="kpi-prazos">0</div>
+          <div class="kpi-sub">próximos 3 dias</div>
+        </div>
+        <!-- Processos ativos -->
+        <div class="kpi blue" onclick="go('processos')" title="Ver processos">
+          <div class="kpi-label">Processos em Andamento</div>
+          <div class="kpi-value" id="kpi-processos">0</div>
+          <div class="kpi-sub">total em tramitação</div>
+        </div>
+        <!-- Honorários -->
+        <div class="kpi green" onclick="go('honorarios')" title="Ver honorários"
+          style="border-color:var(--primary);">
+          <div class="kpi-label">Honorários a Receber</div>
+          <div class="kpi-value" id="kpi-honorarios">R$ 0</div>
+          <div class="kpi-sub">valores pendentes</div>
+        </div>
+        <!-- Clientes -->
+        <div class="kpi neutral" onclick="go('clientes')" title="Ver clientes">
+          <div class="kpi-label">Clientes Ativos</div>
+          <div class="kpi-value" id="kpi-clientes">0</div>
+          <div class="kpi-sub">com processos vinculados</div>
+        </div>
+      </div>
+
+      <!-- DASH GRID -->
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Prazos Processuais</span>
+            <button class="btn btn-ghost btn-sm" onclick="go('processos')">Visualizar todos</button>
+          </div>
+          <div class="card-body" id="dash-prazos">
+            <div class="empty"><div class="empty-icon">📅</div><div class="empty-text">Nenhum prazo registrado</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Clientes Recentes</span>
+            <button class="btn btn-ghost btn-sm" onclick="go('clientes')">Visualizar todos</button>
+          </div>
+          <div class="card-body" id="dash-clientes">
+            <div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Nenhum cliente registrado</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLIENTES ── -->
+    <div class="panel" id="panel-clientes">
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar cliente..." id="searchCliente" oninput="renderClientes()">
+        <button class="btn btn-primary btn-sm" onclick="openModal('cliente')">Novo cliente</button>
+      </div>
+      <div class="full-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Nome</th><th>CPF/CNPJ</th><th>Status</th><th>Processos</th><th>Honorários</th><th>Última mov.</th><th></th></tr>
+            </thead>
+            <tbody id="tb-clientes"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROCESSOS ── -->
+    <div class="panel" id="panel-processos">
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar processo..." id="searchProcesso" oninput="renderProcessos()">
+        <button class="btn btn-primary btn-sm" onclick="openModal('processo')">Novo processo</button>
+      </div>
+      <div class="full-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Nº Processo</th><th>Cliente</th><th>Tipo</th><th>Próximo Prazo</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="tb-processos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HONORÁRIOS ── -->
+    <div class="panel" id="panel-honorarios">
+      <div class="fin-totals">
+        <div class="kpi green" style="cursor:default">
+          <div class="kpi-label">Recebido</div>
+          <div class="kpi-value" style="font-size:22px" id="fin-recebido">R$ 0</div>
+        </div>
+        <div class="kpi" style="cursor:default;border-color:var(--primary-mid)">
+          <div class="kpi-label">Pendente</div>
+          <div class="kpi-value" style="font-size:22px;color:var(--primary)" id="fin-pendente">R$ 0</div>
+        </div>
+        <div class="kpi urgente" style="cursor:default">
+          <div class="kpi-label">Vencido</div>
+          <div class="kpi-value" style="font-size:22px" id="fin-vencido">R$ 0</div>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar..." id="searchHon" oninput="renderHonorarios()">
+        <button class="btn btn-primary btn-sm" onclick="openModal('honorario')">Novo lançamento</button>
+      </div>
+      <div class="full-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Descrição</th><th>Cliente</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody id="tb-honorarios"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DOCUMENTOS ── -->
+    <div class="panel" id="panel-documentos">
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar documento..." id="searchDoc" oninput="renderDocs()">
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="btn btn-ghost btn-sm" onclick="iaQuick('Gere um modelo de petição inicial para ação de cobrança')">✦ Gerar com IA</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('documento')">Novo documento</button>
+        </div>
+      </div>
+      <div class="doc-filters" id="doc-filters">
+        <button class="doc-filter-btn active" onclick="filterDocs('todos',this)">Todos</button>
+        <button class="doc-filter-btn" onclick="filterDocs('Procuração',this)">Procurações</button>
+        <button class="doc-filter-btn" onclick="filterDocs('Contrato',this)">Contratos</button>
+        <button class="doc-filter-btn" onclick="filterDocs('Petição',this)">Petições</button>
+        <button class="doc-filter-btn" onclick="filterDocs('Laudo',this)">Laudos</button>
+        <button class="doc-filter-btn" onclick="filterDocs('Outro',this)">Outros</button>
+      </div>
+      <div class="full-card">
+        <div id="lista-docs">
+          <div class="empty"><div class="empty-icon">📁</div><div class="empty-text">Nenhum documento registrado</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── IA ── -->
+    <div class="panel" id="panel-ia">
+      <div class="ia-wrap">
+        <p style="color:var(--text2);font-size:13.5px;margin-bottom:18px;line-height:1.7">
+          Consulte prazos processuais, solicite minutas, tire dúvidas jurídicas ou peça análises fundamentadas do seu caso.
+        </p>
+        <div class="ia-suggestions" id="ia-sugestoes">
+          <div class="ia-suggestion" onclick="iaQuick('Gere uma minuta de contestação')">✍️ Minuta de contestação</div>
+          <div class="ia-suggestion" onclick="iaQuick('Analise o prazo processual para recurso de apelação')">⏱ Analisar prazo de apelação</div>
+          <div class="ia-suggestion" onclick="iaQuick('Gere um checklist completo para ação trabalhista')">📋 Checklist trabalhista</div>
+          <div class="ia-suggestion" onclick="iaQuick('Quais são os documentos necessários para ajuizar ação de cobrança?')">📄 Docs para cobrança</div>
+        </div>
+        <div class="ia-box">
+          <div class="ia-header">
+            <div class="ia-dot"></div>
+            Praxis Lex IA — Consultoria Jurídica Inteligente
+          </div>
+          <div class="ia-msgs" id="iaMsgs">
+            <div class="ia-msg assistant">Bem-vindo à Consultoria Jurídica Praxis Lex IA. Estou preparado para auxiliar com prazos processuais, elaboração de minutas, checklist de documentos e análises jurídicas. Como posso ser útil?</div>
+          </div>
+          <div class="ia-input-row">
+            <input type="text" id="iaInput" class="ia-input" placeholder="Insira sua consulta jurídica..." onkeydown="if(event.key==='Enter') sendIA()">
+            <button class="ia-send" id="iaBtn" onclick="sendIA()">▶</button>
+          </div>
+        </div>
+        <p style="font-size:11.5px;color:var(--text3);margin-top:12px">⚖️ As respostas são orientativas e não substituem a análise profissional do advogado responsável.</p>
+      </div>
+    </div>
+
+    <!-- ── CONFIGURAÇÕES ── -->
+    <div class="panel" id="panel-config">
+      <div class="card" style="max-width:640px">
+        <div class="card-header"><span class="card-title">Configurações do Escritório</span></div>
+        <div style="padding:24px">
+
+          <div style="margin-bottom:28px">
+            <div class="cfg-section-title">Identidade</div>
+            <div class="form-row">
+              <div class="form-group"><label>Nome do Escritório</label><input id="cfg_nome" placeholder="Ex: Oliveira & Associados"></div>
+              <div class="form-group"><label>Advogado Responsável</label><input id="cfg_adv" placeholder="Dr. Rafael Oliveira"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>OAB</label><input id="cfg_oab" placeholder="OAB/PR 12.345"></div>
+              <div class="form-group"><label>Telefone</label><input id="cfg_tel" placeholder="(44) 99999-0000"></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:28px">
+            <div class="cfg-section-title">Módulo de IA</div>
+            <div style="background:var(--green-bg);border:1px solid rgba(26,107,84,0.25);border-radius:9px;padding:12px 16px;font-size:13px;color:var(--green2);display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              ✅ Módulo de IA ativo e operacional.
+            </div>
+            <div id="cfg_status" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;margin-top:8px"></div>
+            <button class="btn btn-ghost btn-sm" onclick="testIA()" style="margin-top:4px">🔌 Verificar conexão</button>
+          </div>
+
+          <div style="margin-bottom:28px">
+            <div class="cfg-section-title">Áreas de Atuação</div>
+            <p style="font-size:12.5px;color:var(--text3);margin-bottom:14px">Selecione as áreas para personalizar o Assistente IA com contexto jurídico específico.</p>
+            <div class="chips-grid" id="chips-areas">
+              <div class="chip" data-area="civil" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito Civil</div>
+              <div class="chip" data-area="trabalhista" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito Trabalhista</div>
+              <div class="chip" data-area="criminal" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito Criminal</div>
+              <div class="chip" data-area="familia" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito de Família</div>
+              <div class="chip" data-area="tributario" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito Tributário</div>
+              <div class="chip" data-area="administrativo" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito Administrativo</div>
+              <div class="chip" data-area="previdenciario" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito Previdenciário</div>
+              <div class="chip" data-area="consumidor" onclick="toggleChip(this)"><span class="chip-check">○</span> Direito do Consumidor</div>
+            </div>
+          </div>
+
+          <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,0.05);display:flex;justify-content:flex-end">
+            <button class="btn btn-primary" onclick="saveConfig()">Salvar configurações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Novo</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- ── WELCOME ── -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-box">
+    <div class="welcome-header">
+      <div class="welcome-tag">✦ Bem-vindo ao Praxis Lex</div>
+      <div class="welcome-quote" id="wQuote"></div>
+      <div class="welcome-author" id="wAuthor"></div>
+    </div>
+    <div class="welcome-body">
+      <div class="welcome-section-lbl">Prazos Processuais</div>
+      <div id="wPrazos"></div>
+    </div>
+    <div class="welcome-footer">
+      <div class="welcome-date" id="wDate"></div>
+      <button class="welcome-btn" onclick="closeWelcome()">Acessar sistema →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NOTIF ── -->
+<div class="notif" id="notif">
+  <div class="notif-label">Praxis Lex</div>
+  <div id="notifMsg"></div>
+</div>
+
+<script>
+// ── STATE ──
+let ST = { clientes:[], processos:[], honorarios:[], documentos:[] };
+let docFilter = 'todos';
+
+function loadST() {
+  try { const s = localStorage.getItem('praxislex_v2'); if(s) ST = JSON.parse(s); } catch(e){}
+}
+function saveST() { localStorage.setItem('praxislex_v2', JSON.stringify(ST)); }
+
+// ── UTILS ──
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function gv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function sv(id,v) { const el = document.getElementById(id); if(el) el.value = v||''; }
+
+function fmtDate(d) {
+  if(!d) return '—';
+  const [y,m,dd] = d.split('-');
+  return `${dd}/${m}/${y}`;
+}
+function fmtMoney(v) {
+  return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+function daysTo(d) {
+  if(!d) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.ceil((new Date(d+'T00:00:00')-now)/(1000*60*60*24));
+}
+function prazoClass(dias) {
+  if(dias===null) return 'ok';
+  if(dias<=0) return 'hoje';
+  if(dias<=3) return 'urgente';
+  if(dias<=7) return 'atencao';
+  return 'ok';
+}
+function prazoLabel(dias) {
+  if(dias===null) return '—';
+  if(dias===0) return 'Hoje';
+  if(dias<0) return `${Math.abs(dias)}d atrás`;
+  if(dias===1) return 'Amanhã';
+  return `${dias}d`;
+}
+function clienteNome(id) { const c=ST.clientes.find(x=>x.id===id); return c?c.nome:'—'; }
+
+// ── NAVIGATION ──
+const PANELS = ['dashboard','clientes','processos','honorarios','documentos','ia','config'];
+const TITLES = {
+  dashboard:'Visão Geral', clientes:'Clientes', processos:'Processos',
+  honorarios:'Honorários', documentos:'Documentos', ia:'Consultoria IA', config:'Configurações'
+};
+const ACTIONS = {
+  dashboard:'Novo processo', clientes:'Novo cliente', processos:'Novo processo',
+  honorarios:'Novo lançamento', documentos:'Novo documento', ia:'', config:''
+};
+const ACTION_FNS = {
+  dashboard:()=>openModal('processo'), clientes:()=>openModal('cliente'),
+  processos:()=>openModal('processo'), honorarios:()=>openModal('honorario'),
+  documentos:()=>openModal('documento'), ia:()=>{}, config:()=>{}
+};
+
+function go(p) {
+  PANELS.forEach(id => {
+    document.getElementById('panel-'+id).classList.remove('active');
+  });
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('panel-'+p).classList.add('active');
+
+  const navItems = document.querySelectorAll('.nav-item');
+  const idx = PANELS.indexOf(p);
+  if(navItems[idx]) navItems[idx].classList.add('active');
+
+  document.getElementById('pageTitle').textContent = TITLES[p];
+  const btn = document.getElementById('topAction');
+  btn.textContent = ACTIONS[p];
+  btn.style.display = ACTIONS[p] ? '' : 'none';
+  btn.onclick = ACTION_FNS[p];
+
+  if(p==='dashboard') renderDashboard();
+  if(p==='clientes') renderClientes();
+  if(p==='processos') renderProcessos();
+  if(p==='honorarios') renderHonorarios();
+  if(p==='documentos') renderDocs();
+  if(p==='config') loadConfig();
+
+  if(window.innerWidth<=768) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
+// ── MODAL ──
+let curModal = null;
+function openModal(type, id) {
+  curModal = {type, id};
+  const titles = {
+    cliente:'Novo cliente', processo:'Novo processo',
+    honorario:'Novo lançamento', documento:'Novo documento', timeline:'Timeline do Processo'
+  };
+  document.getElementById('modalTitle').textContent = id ? 'Editar' : (titles[type]||'');
+  document.getElementById('modalBody').innerHTML = buildModalBody(type, id);
+  document.getElementById('modalFooter').innerHTML = buildModalFooter(type, id);
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+
+function buildModalBody(type, id) {
+  if(type==='cliente') {
+    const c = id ? ST.clientes.find(x=>x.id===id) : {};
+    return `
+      <div class="form-row">
+        <div class="form-group"><label>Nome completo</label><input id="f_nome" value="${(c&&c.nome)||''}" placeholder="Dr. João Silva"></div>
+        <div class="form-group"><label>CPF / CNPJ</label><input id="f_cpf" value="${(c&&c.cpf)||''}" placeholder="000.000.000-00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Telefone</label><input id="f_tel" value="${(c&&c.tel)||''}" placeholder="(44) 99999-0000"></div>
+        <div class="form-group"><label>Email</label><input id="f_email" value="${(c&&c.email)||''}" placeholder="cliente@email.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Status</label><select id="f_cstatus">
+          ${['Ativo','Inativo','Inadimplente'].map(s=>`<option ${(c&&c.status===s)?'selected':''}>${s}</option>`).join('')}
+        </select></div>
+        <div class="form-group"><label>Endereço</label><input id="f_end" value="${(c&&c.end)||''}" placeholder="Rua, número, cidade"></div>
+      </div>
+      <div class="form-group"><label>Observações</label><textarea id="f_obs">${(c&&c.obs)||''}</textarea></div>`;
+  }
+  if(type==='processo') {
+    const p = id ? ST.processos.find(x=>x.id===id) : {};
+    const opts = ST.clientes.map(c=>`<option value="${c.id}" ${(p&&p.clienteId===c.id)?'selected':''}>${c.nome}</option>`).join('');
+    return `
+      <div class="form-row">
+        <div class="form-group"><label>Nº do Processo</label><input id="f_num" value="${(p&&p.num)||''}" placeholder="0000000-00.0000.0.00.0000"></div>
+        <div class="form-group"><label>Cliente</label><select id="f_cliente"><option value="">Selecione...</option>${opts}</select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Tipo</label><select id="f_tipo">
+          ${['Cível','Trabalhista','Criminal','Família','Tributário','Administrativo','Outro'].map(t=>`<option ${(p&&p.tipo===t)?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+        <div class="form-group"><label>Status</label><select id="f_status">
+          ${['Ativo','Aguardando','Arquivado'].map(t=>`<option ${(p&&p.status===t)?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Próximo Prazo</label><input type="date" id="f_prazo" value="${(p&&p.prazo)||''}"></div>
+        <div class="form-group"><label>Descrição do Prazo</label><input id="f_prazodesc" value="${(p&&p.prazodesc)||''}" placeholder="Ex: Contestação, Recurso..."></div>
+      </div>
+      <div class="form-group"><label>Objeto / Descrição</label><textarea id="f_objeto">${(p&&p.objeto)||''}</textarea></div>`;
+  }
+  if(type==='honorario') {
+    const h = id ? ST.honorarios.find(x=>x.id===id) : {};
+    const opts = ST.clientes.map(c=>`<option value="${c.id}" ${(h&&h.clienteId===c.id)?'selected':''}>${c.nome}</option>`).join('');
+    return `
+      <div class="form-group"><label>Descrição</label><input id="f_desc" value="${(h&&h.desc)||''}" placeholder="Ex: Honorários advocatícios — Processo X"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Cliente</label><select id="f_hcliente"><option value="">Selecione...</option>${opts}</select></div>
+        <div class="form-group"><label>Valor (R$)</label><input id="f_valor" type="number" value="${(h&&h.valor)||''}" placeholder="0,00"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Vencimento</label><input type="date" id="f_hvenc" value="${(h&&h.venc)||''}"></div>
+        <div class="form-group"><label>Status</label><select id="f_hstatus">
+          ${['Pendente','Pago','Vencido'].map(t=>`<option ${(h&&h.status===t)?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="form-group"><label>Observações</label><textarea id="f_hobs">${(h&&h.obs)||''}</textarea></div>`;
+  }
+  if(type==='documento') {
+    const opts = ST.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+    const opts2 = ST.processos.map(p=>`<option value="${p.id}">${p.num}</option>`).join('');
+    return `
+      <div class="form-group"><label>Nome do Documento</label><input id="f_dnome" placeholder="Ex: Contrato, Procuração, Laudo..."></div>
+      <div class="form-row">
+        <div class="form-group"><label>Cliente</label><select id="f_dcliente"><option value="">Selecione...</option>${opts}</select></div>
+        <div class="form-group"><label>Processo</label><select id="f_dprocesso"><option value="">Nenhum</option>${opts2}</select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Tipo</label><select id="f_dtipo">
+          ${['Procuração','Contrato','Petição','Laudo','Sentença','Recurso','Identidade','CPF','Outro'].map(t=>`<option>${t}</option>`).join('')}
+        </select></div>
+        <div class="form-group"><label>Data</label><input type="date" id="f_ddata" value="${new Date().toISOString().slice(0,10)}"></div>
+      </div>
+      <div class="form-group">
+        <label>Arquivo PDF (opcional)</label>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('f_dpdf').click()">
+          <div style="font-size:22px;margin-bottom:4px">📎</div>
+          <div id="uploadTxt" style="font-size:13px;color:var(--text2)">Clique para selecionar PDF</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Máximo 5 MB · salvo localmente</div>
+        </div>
+        <input type="file" id="f_dpdf" accept="application/pdf" style="display:none" onchange="handlePdf(event)">
+      </div>
+      <div class="form-group"><label>Observações</label><textarea id="f_dobs" placeholder="Anotações sobre o documento..."></textarea></div>`;
+  }
+  if(type==='timeline') {
+    const p = ST.processos.find(x=>x.id===id);
+    if(!p) return '';
+    const tl = (p.timeline||[]).map(t=>`
+      <div class="tl-item">
+        <div class="tl-dot gold">📌</div>
+        <div class="tl-body">
+          <div class="tl-title">${t.titulo}</div>
+          <div class="tl-meta">${t.data}${t.autor?' · '+t.autor:''}</div>
+          ${t.desc?`<div style="font-size:12px;color:var(--text3);margin-top:3px">${t.desc}</div>`:''}
+        </div>
+      </div>`).join('')||'<div class="empty"><div class="empty-text">Nenhuma movimentação registrada</div></div>';
+    return `
+      <div class="tl">${tl}</div>
+      <div class="divider"></div>
+      <div class="form-group"><label>Nova Movimentação</label><input id="f_tltitulo" placeholder="Ex: Petição protocolada, Decisão recebida..."></div>
+      <div class="form-row">
+        <div class="form-group"><label>Data</label><input type="date" id="f_tldata" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="form-group"><label>Responsável</label><input id="f_tlautor" placeholder="Dr. Rafael"></div>
+      </div>
+      <div class="form-group"><label>Detalhes</label><textarea id="f_tldesc"></textarea></div>`;
+  }
+  return '';
+}
+
+function buildModalFooter(type, id) {
+  if(type==='timeline') return `<button class="btn btn-ghost" onclick="closeModal()">Fechar</button><button class="btn btn-primary" onclick="saveTimeline('${id}')">Adicionar</button>`;
+  return `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>${id?`<button class="btn btn-danger btn-sm" onclick="del('${type}','${id}')">Excluir</button>`:''}<button class="btn btn-primary" onclick="save('${type}','${id||''}')">Salvar</button>`;
+}
+
+// ── SAVE ──
+function save(type, id) {
+  if(type==='cliente') {
+    const obj = { id:id||uid(), nome:gv('f_nome'), cpf:gv('f_cpf'), tel:gv('f_tel'), email:gv('f_email'), end:gv('f_end'), obs:gv('f_obs'), status:gv('f_cstatus')||'Ativo', lastMov: new Date().toISOString().slice(0,10) };
+    if(!obj.nome) { showNotif('Informe o nome do cliente.'); return; }
+    if(id) { const i=ST.clientes.findIndex(x=>x.id===id); ST.clientes[i]=obj; } else ST.clientes.push(obj);
+  } else if(type==='processo') {
+    const obj = { id:id||uid(), num:gv('f_num'), clienteId:gv('f_cliente'), tipo:gv('f_tipo'), status:gv('f_status'), prazo:gv('f_prazo'), prazodesc:gv('f_prazodesc'), objeto:gv('f_objeto'), timeline: id?(ST.processos.find(x=>x.id===id)||{}).timeline||[]:[] };
+    if(!obj.num) { showNotif('Informe o número do processo.'); return; }
+    if(id) { const i=ST.processos.findIndex(x=>x.id===id); ST.processos[i]=obj; } else ST.processos.push(obj);
+  } else if(type==='honorario') {
+    const obj = { id:id||uid(), desc:gv('f_desc'), clienteId:gv('f_hcliente'), valor:parseFloat(gv('f_valor'))||0, venc:gv('f_hvenc'), status:gv('f_hstatus'), obs:gv('f_hobs') };
+    if(!obj.desc) { showNotif('Informe a descrição.'); return; }
+    if(id) { const i=ST.honorarios.findIndex(x=>x.id===id); ST.honorarios[i]=obj; } else ST.honorarios.push(obj);
+  } else if(type==='documento') {
+    const obj = { id:id||uid(), nome:gv('f_dnome'), clienteId:gv('f_dcliente'), processoId:gv('f_dprocesso'), tipo:gv('f_dtipo'), data:gv('f_ddata'), obs:gv('f_dobs'), pdfKey:window._pdfKey||null, pdfName:window._pdfName||null };
+    if(!obj.nome) { showNotif('Informe o nome do documento.'); return; }
+    ST.documentos.push(obj);
+    window._pdfKey = null; window._pdfName = null;
+  }
+  saveST(); closeModal(); renderAll(); showNotif('✅ Salvo com sucesso!');
+}
+
+function saveTimeline(pid) {
+  const titulo = gv('f_tltitulo');
+  if(!titulo) { showNotif('Informe a movimentação.'); return; }
+  const p = ST.processos.find(x=>x.id===pid);
+  if(!p) return;
+  if(!p.timeline) p.timeline=[];
+  p.timeline.unshift({ titulo, data:gv('f_tldata'), autor:gv('f_tlautor'), desc:gv('f_tldesc') });
+  saveST(); closeModal(); showNotif('📌 Movimentação adicionada!');
+}
+
+function del(type, id) {
+  if(!confirm('Confirmar exclusão?')) return;
+  if(type==='cliente') ST.clientes=ST.clientes.filter(x=>x.id!==id);
+  if(type==='processo') ST.processos=ST.processos.filter(x=>x.id!==id);
+  if(type==='honorario') ST.honorarios=ST.honorarios.filter(x=>x.id!==id);
+  if(type==='documento') {
+    const d = ST.documentos.find(x=>x.id===id);
+    if(d&&d.pdfKey) try{localStorage.removeItem(d.pdfKey);}catch(e){}
+    ST.documentos=ST.documentos.filter(x=>x.id!==id);
+  }
+  saveST(); closeModal(); renderAll(); showNotif('🗑️ Excluído.');
+}
+
+// ── PDF ──
+window._pdfKey = null; window._pdfName = null;
+function handlePdf(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024) { showNotif('⚠️ Arquivo maior que 5 MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const key = 'praxislex_pdf_'+uid();
+    try {
+      localStorage.setItem(key, e.target.result);
+      window._pdfKey = key; window._pdfName = file.name;
+      const z = document.getElementById('uploadZone');
+      if(z) { z.classList.add('has-file'); document.getElementById('uploadTxt').textContent = '✅ '+file.name; }
+    } catch(err) { showNotif('⚠️ Sem espaço no navegador.'); }
+  };
+  reader.readAsDataURL(file);
+}
+function openPdf(key, nome) {
+  const data = localStorage.getItem(key);
+  if(!data) { showNotif('PDF não encontrado.'); return; }
+  const win = window.open();
+  win.document.write(`<html><head><title>${nome}</title></head><body style="margin:0"><embed src="${data}" width="100%" height="100%" type="application/pdf"></body></html>`);
+}
+function downloadPdf(key, nome) {
+  const data = localStorage.getItem(key);
+  if(!data) { showNotif('PDF não encontrado.'); return; }
+  const a = document.createElement('a'); a.href=data; a.download=nome.endsWith('.pdf')?nome:nome+'.pdf'; a.click();
+}
+
+// ── RENDER DASHBOARD ──
+function renderDashboard() {
+  const ativos = ST.processos.filter(p=>p.status==='Ativo').length;
+  const urgentes = ST.processos.filter(p=>{ const d=daysTo(p.prazo); return d!==null&&d<=0; }).length;
+  const criticos = ST.processos.filter(p=>{ const d=daysTo(p.prazo); return d!==null&&d<=3; }).length;
+  const receber = ST.honorarios.filter(h=>h.status==='Pendente').reduce((a,h)=>a+h.valor,0);
+  const clientesAtivos = ST.clientes.filter(c=>c.status==='Ativo'||!c.status).length;
+
+  document.getElementById('kpi-urgentes').textContent = urgentes;
+  document.getElementById('kpi-prazos').textContent = criticos;
+  document.getElementById('kpi-processos').textContent = ativos;
+  document.getElementById('kpi-honorarios').textContent = fmtMoney(receber);
+  document.getElementById('kpi-clientes').textContent = clientesAtivos;
+
+  // Badge nav
+  const nb = document.getElementById('nb-urgentes');
+  if(urgentes>0) { nb.textContent=urgentes; nb.style.display=''; } else nb.style.display='none';
+
+  // Urgente actions list
+  const ua = document.getElementById('urgente-actions');
+  const urgList = ST.processos.filter(p=>{ const d=daysTo(p.prazo); return d!==null&&d<=3; }).sort((a,b)=>a.prazo.localeCompare(b.prazo)).slice(0,3);
+  if(!urgList.length) {
+    ua.innerHTML = '<div class="urgente-action-item"><div class="urgente-dot"></div><span style="color:var(--text3)">Nenhuma ação urgente no momento</span></div>';
+  } else {
+    ua.innerHTML = urgList.map(p=>{
+      const d=daysTo(p.prazo); const cls=d<=0?'red':'amber';
+      return `<div class="urgente-action-item" onclick="openModal('timeline','${p.id}')">
+        <div class="urgente-dot ${cls}"></div>
+        <span>${p.prazodesc||'Prazo'} · <span style="color:var(--text3);font-size:11px">${clienteNome(p.clienteId)}</span></span>
+        <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:${cls==='red'?'var(--red2)':'var(--amber2)'}">${prazoLabel(d)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Prazos próximos
+  const pEl = document.getElementById('dash-prazos');
+  const comPrazo = ST.processos.filter(p=>p.prazo).sort((a,b)=>a.prazo.localeCompare(b.prazo)).slice(0,5);
+  if(!comPrazo.length) {
+    pEl.innerHTML='<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">Nenhum prazo registrado</div></div>';
+  } else {
+    pEl.innerHTML = comPrazo.map(p=>{
+      const d=daysTo(p.prazo); const cls=prazoClass(d); const lbl=prazoLabel(d);
+      return `<div class="list-item" onclick="closeModal();go('processos');setTimeout(()=>openModal('timeline','${p.id}'),80)">
+        <div class="list-info">
+          <div class="list-title">${p.prazodesc||'Prazo processual'}</div>
+          <div class="list-meta"><span class="mono">${p.num}</span> · ${clienteNome(p.clienteId)}</div>
+        </div>
+        <div class="action-group">
+          <span class="badge badge-${cls}">${lbl}</span>
+          <button class="action-btn" title="Gerar minuta" onclick="event.stopPropagation();iaQuick('Gere uma minuta para ${(p.prazodesc||'prazo processual').replace(/'/g,'')}')">✍️</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Clientes recentes
+  const cEl = document.getElementById('dash-clientes');
+  const ultimos = [...ST.clientes].reverse().slice(0,5);
+  if(!ultimos.length) {
+    cEl.innerHTML='<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Nenhum cliente registrado</div></div>';
+  } else {
+    cEl.innerHTML = ultimos.map(c=>{
+      const nProc = ST.processos.filter(p=>p.clienteId===c.id).length;
+      const total = ST.honorarios.filter(h=>h.clienteId===c.id).reduce((a,h)=>a+h.valor,0);
+      const statusBadge = `<span class="badge badge-${(c.status||'Ativo').toLowerCase()}">${c.status||'Ativo'}</span>`;
+      return `<div class="list-item" onclick="openModal('cliente','${c.id}')">
+        <div style="width:34px;height:34px;background:var(--primary-dim);border:1px solid var(--primary-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;color:var(--primary);font-size:13px;flex-shrink:0">${c.nome.charAt(0)}</div>
+        <div class="list-info">
+          <div class="list-title">${c.nome}</div>
+          <div class="list-meta">${c.cpf||c.email||'—'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          ${statusBadge}
+          <span style="font-size:11px;color:var(--text3)">${nProc} proc.</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── RENDER CLIENTES ──
+function renderClientes() {
+  const q = (document.getElementById('searchCliente')||{}).value||'';
+  const list = ST.clientes.filter(c=>c.nome.toLowerCase().includes(q.toLowerCase()));
+  const tb = document.getElementById('tb-clientes');
+  if(!list.length) { tb.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">👤</div><div class="empty-text">Nenhum cliente encontrado</div></div></td></tr>`; return; }
+  tb.innerHTML = list.map(c=>{
+    const nProc = ST.processos.filter(p=>p.clienteId===c.id).length;
+    const total = ST.honorarios.filter(h=>h.clienteId===c.id).reduce((a,h)=>a+h.valor,0);
+    const st = c.status||'Ativo';
+    return `<tr>
+      <td class="primary">${c.nome}</td>
+      <td class="mono">${c.cpf||'—'}</td>
+      <td><span class="badge badge-${st.toLowerCase()}">${st}</span></td>
+      <td>${nProc}</td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2)">${fmtMoney(total)}</span></td>
+      <td>${fmtDate(c.lastMov)}</td>
+      <td><button class="action-btn" onclick="openModal('cliente','${c.id}')">✎</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER PROCESSOS ──
+function renderProcessos() {
+  const q = (document.getElementById('searchProcesso')||{}).value||'';
+  const list = ST.processos.filter(p=>p.num.toLowerCase().includes(q.toLowerCase())||clienteNome(p.clienteId).toLowerCase().includes(q.toLowerCase()));
+  const tb = document.getElementById('tb-processos');
+  if(!list.length) { tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">⚖️</div><div class="empty-text">Nenhum processo encontrado</div></div></td></tr>`; return; }
+  const statusMap = { Ativo:'badge-ativo', Aguardando:'badge-aguardando', Arquivado:'badge-arquivado' };
+  tb.innerHTML = list.map(p=>{
+    const d=daysTo(p.prazo); const cls=prazoClass(d); const lbl=prazoLabel(d);
+    return `<tr>
+      <td class="mono primary">${p.num}</td>
+      <td>${clienteNome(p.clienteId)}</td>
+      <td>${p.tipo}</td>
+      <td>
+        ${p.prazo?`<span class="badge badge-${cls}">${lbl}</span> <span style="font-size:11px;color:var(--text3);margin-left:4px">${fmtDate(p.prazo)}</span>`:'—'}
+      </td>
+      <td><span class="badge ${statusMap[p.status]||'badge-ativo'}">${p.status}</span></td>
+      <td>
+        <div class="action-group">
+          <button class="action-btn" title="Timeline" onclick="openModal('timeline','${p.id}')">📋</button>
+          <button class="action-btn" title="Gerar minuta" onclick="iaQuick('Gere minuta para processo ${p.tipo} - ${(p.prazodesc||'').replace(/'/g,'')}')">✍️</button>
+          <button class="action-btn" onclick="openModal('processo','${p.id}')">✎</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER HONORÁRIOS ──
+function renderHonorarios() {
+  const q = (document.getElementById('searchHon')||{}).value||'';
+
+  // ordenação: vencidos → próximos → pendentes → pagos
+  const order = {'Vencido':0,'Pendente':1,'Pago':2};
+  const list = ST.honorarios
+    .filter(h=>h.desc.toLowerCase().includes(q.toLowerCase()))
+    .sort((a,b)=>((order[a.status]||1)-(order[b.status]||1)));
+
+  const rec = ST.honorarios.filter(h=>h.status==='Pago').reduce((a,h)=>a+h.valor,0);
+  const pen = ST.honorarios.filter(h=>h.status==='Pendente').reduce((a,h)=>a+h.valor,0);
+  const vec = ST.honorarios.filter(h=>h.status==='Vencido').reduce((a,h)=>a+h.valor,0);
+  document.getElementById('fin-recebido').textContent = fmtMoney(rec);
+  document.getElementById('fin-pendente').textContent = fmtMoney(pen);
+  document.getElementById('fin-vencido').textContent = fmtMoney(vec);
+
+  const tb = document.getElementById('tb-honorarios');
+  if(!list.length) { tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">💰</div><div class="empty-text">Nenhum lançamento encontrado</div></div></td></tr>`; return; }
+
+  tb.innerHTML = list.map(h=>{
+    const dias = daysTo(h.venc);
+    let atrasoLabel = '';
+    if(h.status==='Vencido' && h.venc) {
+      const d = daysTo(h.venc);
+      if(d!==null&&d<0) atrasoLabel = `<div style="font-size:10px;color:var(--red2);margin-top:2px">Vencido há ${Math.abs(d)} dias</div>`;
+    }
+    return `<tr>
+      <td>
+        <div class="primary">${h.desc}</div>
+        ${atrasoLabel}
+      </td>
+      <td>${clienteNome(h.clienteId)}</td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold2)">${fmtMoney(h.valor)}</span></td>
+      <td>${fmtDate(h.venc)}</td>
+      <td><span class="badge badge-${h.status.toLowerCase()}">${h.status}</span></td>
+      <td>
+        <div class="action-group">
+          ${h.status!=='Pago'?`<button class="btn btn-green btn-xs" onclick="markPago('${h.id}')">✓ Pago</button>`:''}
+          <button class="action-btn" onclick="openModal('honorario','${h.id}')">✎</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function markPago(id) {
+  const h = ST.honorarios.find(x=>x.id===id);
+  if(h) { h.status='Pago'; saveST(); renderHonorarios(); showNotif('✅ Honorário marcado como pago!'); }
+}
+
+// ── RENDER DOCS ──
+function filterDocs(tipo, btn) {
+  docFilter = tipo;
+  document.querySelectorAll('.doc-filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderDocs();
+}
+
+function renderDocs() {
+  const q = (document.getElementById('searchDoc')||{}).value||'';
+  let list = ST.documentos.filter(d=>d.nome.toLowerCase().includes(q.toLowerCase()));
+  if(docFilter!=='todos') list = list.filter(d=>d.tipo===docFilter);
+  const el = document.getElementById('lista-docs');
+  const icones = { Procuração:'📜', Contrato:'📋', Petição:'✍️', Laudo:'🔬', Sentença:'⚖️', Recurso:'📤', Identidade:'🪪', CPF:'🪪', Outro:'📄' };
+  if(!list.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📁</div><div class="empty-text">Nenhum documento encontrado</div></div>'; return; }
+  el.innerHTML = list.map(d=>`
+    <div class="doc-item">
+      <div class="doc-icon">${icones[d.tipo]||'📄'}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--text);font-weight:600">${d.nome}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${d.tipo} · ${clienteNome(d.clienteId)} · ${fmtDate(d.data)}${d.pdfKey?' · <span style="color:var(--green2)">📎 PDF</span>':''}</div>
+      </div>
+      <div class="action-group">
+        ${d.pdfKey?`<button class="action-btn" title="Ver PDF" onclick="openPdf('${d.pdfKey}','${d.pdfName||d.nome}')">👁</button><button class="action-btn" title="Baixar" onclick="downloadPdf('${d.pdfKey}','${d.pdfName||d.nome}')">⬇</button>`:''}
+        <button class="action-btn" onclick="del('documento','${d.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderAll() {
+  renderDashboard();
+  renderClientes();
+  renderProcessos();
+  renderHonorarios();
+  renderDocs();
+}
+
+// ── NOTIF ──
+function showNotif(msg) {
+  const el = document.getElementById('notif');
+  document.getElementById('notifMsg').textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+// ── CONFIGURAÇÕES ──
+function loadConfig() {
+  const cfg = JSON.parse(localStorage.getItem('praxislex_cfg')||'{}');
+  sv('cfg_nome', cfg.nome); sv('cfg_adv', cfg.adv); sv('cfg_oab', cfg.oab); sv('cfg_tel', cfg.tel);
+  const areas = cfg.areas||[];
+  document.querySelectorAll('.chip').forEach(el=>{
+    const a=el.dataset.area, on=areas.includes(a);
+    el.classList.toggle('on', on);
+    el.querySelector('.chip-check').textContent = on?'✓':'○';
+  });
+  if(cfg.adv) { document.getElementById('userName').textContent=cfg.adv; }
+  if(cfg.nome) { document.getElementById('userRole').textContent=cfg.nome; }
+}
+
+function saveConfig() {
+  const areas = Array.from(document.querySelectorAll('.chip.on')).map(el=>el.dataset.area);
+  const cfg = { nome:gv('cfg_nome'), adv:gv('cfg_adv'), oab:gv('cfg_oab'), tel:gv('cfg_tel'), areas };
+  localStorage.setItem('praxislex_cfg', JSON.stringify(cfg));
+  if(cfg.adv) { document.getElementById('userName').textContent=cfg.adv; const ini=cfg.adv.split(' ').filter(Boolean); document.getElementById('userInitials').textContent=ini.map(w=>w[0]).slice(0,2).join('').toUpperCase()||'DR'; }
+  if(cfg.nome) document.getElementById('userRole').textContent=cfg.nome;
+  showNotif('✅ Configurações salvas!');
+}
+
+function toggleChip(el) {
+  const on = !el.classList.contains('on');
+  el.classList.toggle('on', on);
+  el.querySelector('.chip-check').textContent = on?'✓':'○';
+}
+
+async function testIA() {
+  const statusEl = document.getElementById('cfg_status');
+  statusEl.style.display='block';
+  statusEl.style.background='rgba(255,255,255,0.03)';
+  statusEl.style.border='1px solid rgba(255,255,255,0.06)';
+  statusEl.style.borderRadius='8px';
+  statusEl.style.color='var(--text3)';
+  statusEl.textContent='🔄 Testando conexão...';
+  try {
+    const r = await fetch('https://lexdesk-proxy.durvalsimardi.workers.dev',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:20,messages:[{role:'user',content:'Responda: OK'}]})
+    });
+    const d = await r.json();
+    if(d.content?.[0]?.text) {
+      statusEl.style.background='var(--green-bg)'; statusEl.style.border='1px solid rgba(26,107,84,0.25)'; statusEl.style.color='var(--green2)';
+      statusEl.textContent='✅ Conexão ativa! Módulo de IA operacional.';
+    } else throw new Error(d.error?.message||'Resposta inesperada');
+  } catch(e) {
+    statusEl.style.background='var(--red-bg)'; statusEl.style.border='1px solid rgba(155,35,53,0.25)'; statusEl.style.color='var(--red2)';
+    statusEl.textContent='❌ Erro: '+(e.message||'Verifique a conexão.');
+  }
+}
+
+// ── IA ──
+function getCtx() {
+  const cfg = JSON.parse(localStorage.getItem('praxislex_cfg')||'{}');
+  const areas = cfg.areas||[];
+  const base = {
+    civil:`DIREITO CIVIL: CC/2002 - prazos: prescrição geral 10 anos (art.205), reparação civil 3 anos (art.206 §3º III). Responsabilidade civil: subjetiva (art.186) e objetiva (art.927). Posse: ações possessórias, usucapião ordinária 10 anos, extraordinária 15 anos.`,
+    trabalhista:`DIREITO TRABALHISTA: CLT - prescrição 2 anos após término, 5 anos durante. Verbas rescisórias: aviso prévio, FGTS+40%, férias+1/3, 13º proporcional. Horas extras: adicional mínimo 50%. Contestação: 5 dias úteis.`,
+    criminal:`DIREITO CRIMINAL: CP - prescrição calculada pela pena máxima. Excludentes: legítima defesa (art.25), estado de necessidade (art.24). CPP - prisão preventiva (art.312), flagrante (art.302). Inquérito: 10 dias preso, 30 dias solto.`,
+    familia:`DIREITO DE FAMÍLIA: Divórcio direto (EC 66/2010). Guarda compartilhada como regra (art.1583 §2º). Alimentos: binômio necessidade/possibilidade. Inventário: 2 meses da abertura.`,
+    tributario:`DIREITO TRIBUTÁRIO: CTN - decadência 5 anos (art.173), prescrição 5 anos (art.174). Execução fiscal: Lei 6830/80, embargos 30 dias.`,
+    administrativo:`DIREITO ADMINISTRATIVO: Mandado de segurança: 120 dias. Princípios: LIMPE. Lei 14.133/21 (licitações), Lei 8.429/92 (improbidade).`,
+    previdenciario:`DIREITO PREVIDENCIÁRIO: EC 103/2019: 65H/62M, 20 anos contribuição. BPC: deficiente ou 65+ com renda per capita até 1/4 SM.`,
+    consumidor:`DIREITO DO CONSUMIDOR: CDC Lei 8078/90. Vícios: 30 dias não duráveis, 90 dias duráveis. Prescrição fato produto: 5 anos. Inversão ônus prova (art.6º VIII).`,
+  };
+  const ctx_areas = areas.filter(a=>base[a]).map(a=>base[a]).join('\n');
+  return `Você é o assistente jurídico Praxis Lex IA, especializado em Direito brasileiro. Responda de forma clara, objetiva e profissional.
+Contexto: ${ST.processos.length} processos ativos, ${ST.clientes.length} clientes cadastrados.
+${ctx_areas||'Atue como especialista generalista em direito brasileiro.'}
+Sempre indique quando o assunto requer análise de caso específico ou consulta à legislação atualizada.`;
+}
+
+async function sendIA() {
+  const input = document.getElementById('iaInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  const msgs = document.getElementById('iaMsgs');
+  msgs.innerHTML += `<div class="ia-msg user">${msg}</div>`;
+  msgs.innerHTML += `<div class="ia-msg loading" id="iaLoading">✦ Consultando Praxis Lex IA...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('iaBtn').disabled = true;
+  try {
+    const r = await fetch('https://lexdesk-proxy.durvalsimardi.workers.dev',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01'},
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1200, system:getCtx(), messages:[{role:'user',content:msg}] })
+    });
+    const d = await r.json();
+    const reply = d.content?.[0]?.text||'Não foi possível obter resposta.';
+    document.getElementById('iaLoading').remove();
+    msgs.innerHTML += `<div class="ia-msg assistant">${reply.replace(/\n/g,'<br>')}</div>`;
+  } catch(e) {
+    document.getElementById('iaLoading').remove();
+    msgs.innerHTML += `<div class="ia-msg assistant" style="color:var(--red2)">Erro ao conectar com a IA.</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('iaBtn').disabled = false;
+}
+
+function iaQuick(txt) {
+  document.getElementById('iaInput').value = txt;
+  go('ia');
+  setTimeout(sendIA, 120);
+}
+
+// ── WELCOME POPUP ──
+const QUOTES = [
+  {txt:'"A justiça atrasada não é justiça, senão injustiça qualificada."', autor:'— Rui Barbosa'},
+  {txt:'"O advogado é indispensável à administração da justiça."', autor:'— Art. 133, CF/88'},
+  {txt:'"O direito é a arte do bom e do justo."', autor:'— Celso, jurista romano'},
+  {txt:'"Não há liberdade sem lei, nem lei sem justiça."', autor:'— Montesquieu'},
+  {txt:'"A lei é a razão livre das paixões."', autor:'— Aristóteles'},
+  {txt:'"Que a sua prática seja tão grande quanto o seu propósito."', autor:'— Praxis Lex'},
+];
+
+function showWelcome() {
+  const q = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  document.getElementById('wQuote').textContent = q.txt;
+  document.getElementById('wAuthor').textContent = q.autor;
+
+  const hoje = new Date();
+  const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  document.getElementById('wDate').textContent = `${dias[hoje.getDay()]}, ${hoje.getDate()} de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`;
+
+  const prazos = ST.processos.filter(p=>p.prazo).map(p=>({...p,d:daysTo(p.prazo)})).filter(p=>p.d!==null&&p.d<=10).sort((a,b)=>a.d-b.d).slice(0,4);
+  const el = document.getElementById('wPrazos');
+  if(!prazos.length) {
+    el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">✅ Nenhum prazo nos próximos 10 dias.</div>';
+  } else {
+    el.innerHTML = prazos.map(p=>{
+      const cls = p.d<=0?'hoje':p.d<=3?'urgente':p.d<=7?'atencao':'ok';
+      const lbl = p.d===0?'Hoje':p.d<0?`${Math.abs(p.d)}d atrás`:p.d===1?'Amanhã':`${p.d}d`;
+      return `<div class="welcome-prazo" onclick="closeWelcome();go('processos');setTimeout(()=>openModal('timeline','${p.id}'),80)">
+        <div class="welcome-prazo-badge ${cls}">${lbl}</div>
+        <div style="flex:1;min-width:0">
+          <div class="welcome-prazo-title">${p.prazodesc||'Prazo processual'}</div>
+          <div class="welcome-prazo-meta"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">${p.num}</span> · ${clienteNome(p.clienteId)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('welcomeOverlay').style.display='flex';
+}
+
+function closeWelcome() {
+  const el = document.getElementById('welcomeOverlay');
+  el.style.transition='opacity 0.3s';
+  el.style.opacity='0';
+  setTimeout(()=>el.style.display='none', 300);
+}
+
+// ── THEME TOGGLE ──
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('themeBtn').textContent = '🌙';
+    localStorage.setItem('praxislex_theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeBtn').textContent = '☀️';
+    localStorage.setItem('praxislex_theme', 'dark');
+  }
+  // Update topbar bg for dark mode
+  const topbar = document.querySelector('.topbar');
+  if (document.documentElement.getAttribute('data-theme') === 'dark') {
+    topbar.style.background = 'rgba(9,9,11,0.97)';
+  } else {
+    topbar.style.background = 'rgba(248,250,252,0.96)';
+  }
+}
+
+// Load saved theme
+(function() {
+  const saved = localStorage.getItem('praxislex_theme');
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    setTimeout(() => {
+      const btn = document.getElementById('themeBtn');
+      if (btn) btn.textContent = '☀️';
+      const topbar = document.querySelector('.topbar');
+      if (topbar) topbar.style.background = 'rgba(9,9,11,0.97)';
+    }, 0);
+  }
+})();
+
+// ── INIT ──
+loadST();
+renderAll();
+
+// DEMO DATA
+if(!ST.clientes.length) {
+  const c1=uid(), c2=uid(), c3=uid();
+  ST.clientes=[
+    {id:c1,nome:'Maria Aparecida Santos',cpf:'123.456.789-00',tel:'(44) 99123-4567',email:'maria@email.com',end:'Rua das Flores, 123 - Maringá/PR',obs:'',status:'Ativo',lastMov:'2026-03-20'},
+    {id:c2,nome:'João Carlos Oliveira',cpf:'987.654.321-00',tel:'(44) 98765-4321',email:'joao@empresa.com',end:'Av. Brasil, 456 - Londrina/PR',obs:'Cliente desde 2022',status:'Ativo',lastMov:'2026-03-25'},
+    {id:c3,nome:'Empresa XPTO Ltda',cpf:'12.345.678/0001-90',tel:'(44) 3344-5566',email:'contato@xpto.com',end:'Rua Industrial, 789 - Cascavel/PR',obs:'',status:'Inadimplente',lastMov:'2026-02-10'},
+  ];
+  ST.processos=[
+    {id:uid(),num:'0001234-56.2024.8.16.0001',clienteId:c1,tipo:'Trabalhista',status:'Ativo',prazo:new Date(Date.now()+1*86400000).toISOString().slice(0,10),prazodesc:'Apresentar contestação',objeto:'Ação trabalhista - horas extras',timeline:[{titulo:'Petição inicial protocolada',data:'2024-01-15',autor:'Dr. Rafael',desc:''}]},
+    {id:uid(),num:'0005678-90.2024.8.16.0002',clienteId:c2,tipo:'Cível',status:'Ativo',prazo:new Date(Date.now()+8*86400000).toISOString().slice(0,10),prazodesc:'Recurso de apelação',objeto:'Cobrança de dívida',timeline:[]},
+    {id:uid(),num:'0009999-11.2023.8.16.0003',clienteId:c1,tipo:'Família',status:'Aguardando',prazo:'',prazodesc:'',objeto:'Inventário',timeline:[]},
+    {id:uid(),num:'0002222-33.2025.8.16.0004',clienteId:c3,tipo:'Tributário',status:'Ativo',prazo:new Date(Date.now()+0*86400000).toISOString().slice(0,10),prazodesc:'Prazo fatal - embargos à execução',objeto:'Execução fiscal municipal',timeline:[]},
+  ];
+  ST.honorarios=[
+    {id:uid(),desc:'Honorários – Ação trabalhista',clienteId:c1,valor:3500,venc:new Date(Date.now()+15*86400000).toISOString().slice(0,10),status:'Pendente',obs:''},
+    {id:uid(),desc:'Honorários – Ação de cobrança (entrada)',clienteId:c2,valor:1500,venc:new Date(Date.now()-5*86400000).toISOString().slice(0,10),status:'Pago',obs:''},
+    {id:uid(),desc:'Honorários – Inventário (parcela 1)',clienteId:c1,valor:2000,venc:new Date(Date.now()-10*86400000).toISOString().slice(0,10),status:'Vencido',obs:''},
+    {id:uid(),desc:'Honorários – Execução fiscal',clienteId:c3,valor:4800,venc:new Date(Date.now()-30*86400000).toISOString().slice(0,10),status:'Vencido',obs:'Cliente inadimplente'},
+  ];
+  ST.documentos=[
+    {id:uid(),nome:'Procuração Ad Judicia',clienteId:c1,processoId:'',tipo:'Procuração',data:'2024-01-10',obs:'Assinada com firma reconhecida',pdfKey:null},
+    {id:uid(),nome:'Carteira de Trabalho',clienteId:c1,processoId:'',tipo:'Outro',data:'2024-01-10',obs:'',pdfKey:null},
+  ];
+  saveST();
+  renderAll();
+}
+
+setTimeout(showWelcome, 400);
+</script>
+</body>
+</html>

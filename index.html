@@ -1760,6 +1760,47 @@
   // Expose to global
   window._db      = db;
   window._fbReady = true;
+
+  // ── Correções de 24/11/2026 ──
+  // Escapa texto digitado antes de ir para o innerHTML (evita que um título rode código no navegador dos outros).
+  window.esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // Erro de gravação aparece para quem salvou, em vez de sumir no console.
+  window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.updateSyncIndicator(false); alert('Não salvou no servidor: ' + (e && e.message || e)); };
+  // Grava um dia lendo a versão do servidor na hora (transação): duas pessoas salvando ao mesmo tempo não apagam o pedido uma da outra.
+  window.updateDay = (key, fn) => {
+    const ref = db.collection('tasks').doc(key);
+    return db.runTransaction(async tx => {
+      const s = await tx.get(ref);
+      const list = fn(s.exists ? (s.data().list || []) : []);
+      tx.set(ref, { list });
+      return list;
+    }).then(list => { if (window.state) { window.state._tasks = window.state._tasks || {}; window.state._tasks[key] = list; } return list; })
+      .catch(window.fbErro);
+  };
+  // Muda um pedido de dia numa transação só (não some dos dois dias se a rede cair no meio).
+  window.moveTask = (oldKey, newKey, id, upd) => {
+    const refOld = db.collection('tasks').doc(oldKey), refNew = db.collection('tasks').doc(newKey);
+    return db.runTransaction(async tx => {
+      const a = await tx.get(refOld), b = oldKey === newKey ? a : await tx.get(refNew);
+      const old = ((a.exists && a.data().list) || []).filter(t => t.id != id);
+      if (oldKey === newKey) { tx.set(refOld, { list: [...old, upd] }); return; }
+      tx.set(refOld, { list: old });
+      tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
+    }).catch(window.fbErro);
+  };
+  // Hoje no fuso do computador (toISOString usava UTC e virava o dia às 21h).
+  window.ymdLocal = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+  // Mídias Sociais e Configurações: recebe o que os outros salvaram (antes só lia o localStorage deste navegador).
+  db.collection('config').doc('social').onSnapshot(s => {
+    if (!s.exists) return;
+    try { localStorage.setItem('pmSocial', JSON.stringify(s.data())); } catch (e) {}
+    if (document.querySelector('[data-tab="social"].active')) window.renderSocial && window.renderSocial();
+  }, e => console.error('config/social', e));
+  db.collection('config').doc('os').onSnapshot(s => {
+    if (!s.exists) return;
+    try { localStorage.setItem('pmOsConfig', JSON.stringify(s.data())); } catch (e) {}
+  }, e => console.error('config/os', e));
   window._fsLib   = {
     collection: (db, col)       => db.collection(col),
     doc:        (db, col, id)   => db.collection(col).doc(id),
@@ -1772,7 +1813,8 @@
   // Listen TASKS
   db.collection("tasks").onSnapshot(snap => {
     const tasks = {};
-    snap.forEach(d => { tasks[d.id] = d.data().list || []; });
+    // só chaves no padrão secretaria_AAAA-MM-DD (as antigas _wN_dN já foram copiadas para esse formato em 24/11/2026)
+    snap.forEach(d => { if (/^[a-z]+_\d{4}-\d{2}-\d{2}$/.test(d.id)) tasks[d.id] = d.data().list || []; });
     window._state_tasks = tasks;
     if (window.state) {
       window.state._tasks = tasks;
@@ -1796,7 +1838,7 @@
         }
       }
     }
-    window.updateSyncIndicator && window.updateSyncIndicator(true);
+    if (!snap.metadata.fromCache) window.updateSyncIndicator && window.updateSyncIndicator(true);
   }, err => {
     console.error("Firestore tasks error:", err);
     window.updateSyncIndicator && window.updateSyncIndicator(false);
@@ -1821,8 +1863,7 @@
   });
 
   console.log("🔥 Firebase Compat conectado!");
-  // Immediately mark as connected
-  setTimeout(() => { window.updateSyncIndicator && window.updateSyncIndicator(true); }, 500);
+  // "Sincronizado" só aparece quando o servidor responde (no snapshot de tasks acima), não mais por tempo.
 })();
 </script>
 
@@ -2423,9 +2464,7 @@ Object.defineProperty(state, 'tasks', {
 
 function saveTasks() {
   if (window._fbReady && window._db) {
-    Object.keys(state._tasks || {}).forEach(key => {
-      window._db.collection("tasks").doc(key).set({ list: (state._tasks||{})[key] || [] }).catch(console.error);
-    });
+    // não regrava mais todos os dias de uma vez (apagava o que os outros salvaram); cada ação grava o seu dia com updateDay()
   }
   localStorage.setItem('pmTasks', JSON.stringify(state._tasks || {}));
 }
@@ -2435,13 +2474,13 @@ function taskKey(sec, dateStr) {
 }
 
 function todayStr() {
-  return new Date().toISOString().split('T')[0];
+  return ymdLocal();
 }
 
 function dateAdd(dateStr, days) {
   const d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
+  return ymdLocal(d);
 }
 
 function addTask(sec, weekNum, dayIdx, task) {
@@ -2603,11 +2642,11 @@ function renderSecretaria(secId) {
           onclick="selectDay('${secId}','${t.dateStr}')">
           <div style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;background:${isLate ? 'var(--red)' : sc}"></div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:600;color:var(--fg)">${t.titulo}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--fg)">${esc(t.titulo)}</div>
             <div style="font-size:11px;color:var(--fg-2);margin-top:2px">
               <span style="color:${isLate ? 'var(--red)' : 'inherit'};font-weight:${isLate ? '600' : '400'}">${dateFmt}${isLate ? ' ⚠' : ''}</span>
-              · ${t.tipo || '—'} · ${t.canal || '—'}
-              ${t.responsavel ? '· 👤 ' + t.responsavel : ''}
+              · ${esc(t.tipo || '—')} · ${esc(t.canal || '—')}
+              ${t.responsavel ? '· 👤 ' + esc(t.responsavel) : ''}
             </div>
           </div>
           ${t.prioridade === 'alta' ? '<span class="badge badge-alta" style="font-size:9px;flex-shrink:0">ALTA</span>' : ''}
@@ -2742,14 +2781,14 @@ function renderDayPanel(secId, dateStr) {
         const opacity = t.status === 'concluido' ? 'opacity:.55' : '';
         return `<div class="dp-task ${t.prioridade||'media'}" style="${opacity}">
           <div style="flex-shrink:0;margin-top:1px">
-            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${tc};color:${tt};white-space:nowrap">${t.tipo||'—'}</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${tc};color:${tt};white-space:nowrap">${esc(t.tipo||'—')}</span>
           </div>
           <div class="dp-task-body">
-            <div class="dp-task-title" onclick="openDetailByDate('${secId}','${dateStr}',${t.id})">${t.titulo}</div>
+            <div class="dp-task-title" onclick="openDetailByDate('${secId}','${dateStr}',${t.id})">${esc(t.titulo)}</div>
             <div class="dp-task-meta">
-              <span>📡 ${t.canal||'—'}</span>
+              <span>📡 ${esc(t.canal||'—')}</span>
               <span>⏰ ${t.horario||'—'}</span>
-              ${t.responsavel ? `<span>👤 ${t.responsavel}</span>` : ''}
+              ${t.responsavel ? `<span>👤 ${esc(t.responsavel)}</span>` : ''}
               <span style="color:${sc};font-weight:600">● ${sl}</span>
             </div>
           </div>
@@ -2792,7 +2831,7 @@ function openDetailByDate(secId, dateStr, taskId) {
   const statusMap = { pendente:'🕐 Pendente', em_producao:'🎬 Em Produção', andamento:'🔄 Em Andamento', concluido:'✅ Concluído' };
   document.getElementById('modal-title').textContent = task.titulo;
   document.getElementById('modal-badges').innerHTML = `
-    <span class="badge ${typeClass}">${task.tipo}</span>
+    <span class="badge ${typeClass}">${esc(task.tipo)}</span>
     <span class="badge ${prioClass}">${(task.prioridade||'media').toUpperCase()}</span>
     <span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${statusMap[task.status||'pendente']}</span>`;
   const dateObj2 = isValidDate(dateStr) ? new Date(dateStr + 'T12:00:00') : null;
@@ -2800,13 +2839,13 @@ function openDetailByDate(secId, dateStr, taskId) {
     ? dateObj2.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'})
     : dateStr;
   document.getElementById('modal-fields').innerHTML = `
-    <div class="modal-field"><label>Responsável</label><div class="val">👤 ${task.responsavel||'—'}</div></div>
-    <div class="modal-field"><label>Canal / Mídia</label><div class="val">📡 ${task.canal||'—'}</div></div>
+    <div class="modal-field"><label>Responsável</label><div class="val">👤 ${esc(task.responsavel||'—')}</div></div>
+    <div class="modal-field"><label>Canal / Mídia</label><div class="val">📡 ${esc(task.canal||'—')}</div></div>
     <div class="modal-field"><label>Prazo</label><div class="val">⏰ ${task.horario||'—'} · ${task.dataPrazo && isValidDate(task.dataPrazo) ? fmtDate(task.dataPrazo) : (isValidDate(dateStr) ? fmtDate(dateStr) : '—')}</div></div>
-    <div class="modal-field"><label>Aprovação</label><div class="val">✔️ ${task.aprovacao||'—'}</div></div>
+    <div class="modal-field"><label>Aprovação</label><div class="val">✔️ ${esc(task.aprovacao||'—')}</div></div>
     <div class="modal-field"><label>Secretaria</label><div class="val">${s.icon} ${s.nome}</div></div>
     <div class="modal-field"><label>Data</label><div class="val">📅 ${dateFmt2.charAt(0).toUpperCase() + dateFmt2.slice(1)}</div></div>
-    ${task.hashtags ? `<div class="modal-field" style="grid-column:1/-1"><label>Pauta / Hashtags</label><div class="val" style="color:var(--blue)">${task.hashtags}</div></div>` : ''}
+    ${task.hashtags ? `<div class="modal-field" style="grid-column:1/-1"><label>Pauta / Hashtags</label><div class="val" style="color:var(--blue)">${esc(task.hashtags)}</div></div>` : ''}
   `;
   document.getElementById('modal-desc-text').textContent = task.desc || 'Sem descrição.';
   document.getElementById('detailModal').classList.add('open');
@@ -2845,9 +2884,7 @@ function deleteTaskByDate(secId, dateStr, taskId) {
   const key = taskKey(secId, dateStr);
   if (!state._tasks) state._tasks = {};
   state._tasks[key] = (state._tasks[key] || []).filter(t => t.id != taskId);
-  if (window._fbReady && window._db) {
-    window._db.collection("tasks").doc(key).set({ list: state._tasks[key] }).catch(console.error);
-  }
+  if (window._fbReady && window._db) updateDay(key, l => l.filter(t => t.id != taskId));
   localStorage.setItem('pmTasks', JSON.stringify(state._tasks));
   renderDayPanel(secId, dateStr);
   renderAnnualCalendar(secId, parseInt(dateStr.slice(0,4)));
@@ -2860,9 +2897,8 @@ function toggleDoneTask(secId, dateStr, taskId) {
   const task = (state._tasks[key] || []).find(t => t.id == taskId);
   if (!task) return;
   task.status = task.status === 'concluido' ? 'pendente' : 'concluido';
-  if (window._fbReady && window._db) {
-    window._db.collection("tasks").doc(key).set({ list: state._tasks[key] }).catch(console.error);
-  }
+  const novoStatus = task.status;
+  if (window._fbReady && window._db) updateDay(key, l => l.map(t => t.id == taskId ? { ...t, status: novoStatus } : t));
   localStorage.setItem('pmTasks', JSON.stringify(state._tasks));
   renderDayPanel(secId, dateStr);
   renderAnnualCalendar(secId, parseInt(dateStr.slice(0,4)));
@@ -2912,7 +2948,9 @@ function markDone() {
   const task = (state.tasks[key]||[]).find(t => t.id == taskId);
   if (task) {
     task.status = task.status === 'concluido' ? 'pendente' : 'concluido';
-    saveTasks();
+    const novoStatus = task.status;
+    // antes chamava saveTasks(), que regravava todos os dias de todas as secretarias
+    if (window._fbReady && window._db) updateDay(key, l => l.map(t => t.id == taskId ? { ...t, status: novoStatus } : t));
     closeModal('detailModal');
     renderDayPanel(secId, dateStr);
     renderAnnualCalendar(secId, parseInt(dateStr.slice(0,4)));
@@ -2967,24 +3005,24 @@ function saveTask() {
         if ((state._tasks[k] || []).find(t => t.id == editId)) oldKey = k;
       }
     });
-    if (oldKey) {
-      // Remove from old key
-      state._tasks[oldKey] = state._tasks[oldKey].filter(t => t.id != editId);
-      if (window._fbReady && window._db)
-        window._db.collection("tasks").doc(oldKey).set({ list: state._tasks[oldKey] }).catch(console.error);
-    }
+    // mantém os campos que o formulário não tem (quem criou, foto etc.)
+    const antigo = oldKey ? ((state._tasks[oldKey] || []).find(t => t.id == editId) || {}) : {};
+    const upd = { ...antigo, ...payload, id: editId };
+    if (oldKey) state._tasks[oldKey] = state._tasks[oldKey].filter(t => t.id != editId);
     // Place at new key (new date)
     const newKey = taskKey(secId, dataPrazo);
     if (!state._tasks[newKey]) state._tasks[newKey] = [];
-    state._tasks[newKey].push({ ...payload, id: editId });
-    if (window._fbReady && window._db)
-      window._db.collection("tasks").doc(newKey).set({ list: state._tasks[newKey] }).catch(console.error);
+    state._tasks[newKey].push(upd);
+    if (window._fbReady && window._db) {
+      if (oldKey) moveTask(oldKey, newKey, editId, upd);
+      else updateDay(newKey, l => [...l.filter(t => t.id != editId), upd]);
+    }
   } else {
     const newKey = taskKey(secId, dataPrazo);
+    const novo = { ...payload, id: Date.now() };
     if (!state._tasks[newKey]) state._tasks[newKey] = [];
-    state._tasks[newKey].push({ ...payload, id: Date.now() });
-    if (window._fbReady && window._db)
-      window._db.collection("tasks").doc(newKey).set({ list: state._tasks[newKey] }).catch(console.error);
+    state._tasks[newKey].push(novo);
+    if (window._fbReady && window._db) updateDay(newKey, l => [...l, novo]);
   }
 
   localStorage.setItem('pmTasks', JSON.stringify(state._tasks));
@@ -3111,11 +3149,11 @@ function renderPendentes(filter) {
       return `<div class="pend-item">
         <div class="pend-dot" style="background:${isLate?'#dc2626':sc}"></div>
         <div class="pend-info">
-          <div class="pend-title" style="cursor:pointer" onclick="switchTabById('${s.id}');setTimeout(()=>selectDay('${s.id}','${t.dateStr}'),200)">${t.titulo}</div>
+          <div class="pend-title" style="cursor:pointer" onclick="switchTabById('${s.id}');setTimeout(()=>selectDay('${s.id}','${t.dateStr}'),200)">${esc(t.titulo)}</div>
           <div class="pend-meta">
             <span style="font-weight:600;color:${isLate?'#dc2626':'inherit'}">${dateLabel}${isLate?' ⚠️':''}</span>
-            · ${t.tipo||'—'} · ${t.canal||'—'}
-            ${t.responsavel?'· 👤 '+t.responsavel:''}
+            · ${esc(t.tipo||'—')} · ${esc(t.canal||'—')}
+            ${t.responsavel?'· 👤 '+ esc(t.responsavel) :''}
             · <span style="color:${sc};font-weight:600">${sl}</span>
           </div>
         </div>
@@ -3564,8 +3602,8 @@ h1{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
 window.renderRelatorio      = renderRelatorio;
 window.exportarRelatorioPDF = exportarRelatorioPDF;
 
-seedData();
-seedLics();
+// seedData() e seedLics() não rodam mais: gravavam pedidos de exemplo e regravavam as licitações 1001/1002
+// no Firestore toda vez que o site abria num navegador novo (corrigido em 24/11/2026).
 
 // ── Inicialização do perfil ──
 (function initProfileSelect() {
@@ -3636,7 +3674,7 @@ function saveLics(arr) {
   localStorage.setItem('pmLics', JSON.stringify(arr));
   if (window._fbReady && window._db) {
     arr.forEach(l => {
-      window._db.collection("licitacoes").doc(String(l.id)).set({ ...l }).catch(console.error);
+      window._db.collection("licitacoes").doc(String(l.id)).set({ ...l }).catch(fbErro);
     });
   }
 }
@@ -3700,14 +3738,14 @@ function renderLicitacoes(filter = 'todos') {
         const dcLabel = { overdue:'⚠ Vencida', today:'Hoje', future:'', '':'' }[dc];
         return `<div class="lic-row" onclick="openLicDetail(${l.id})">
           <div>
-            <div class="lic-row-title">${l.nome}</div>
-            <div class="lic-row-sub">${l.sec || '—'}</div>
+            <div class="lic-row-title">${esc(l.nome)}</div>
+            <div class="lic-row-sub">${esc(l.sec || '—')}</div>
           </div>
           <div class="lic-row-val">${fmtBRL(l.valor)}</div>
           <div>
             <div class="lic-row-date ${dc}">${fmtDate(l.data)} ${dcLabel ? `<span style="font-size:10px">${dcLabel}</span>` : ''}</div>
           </div>
-          <div class="lic-row-organ">${l.orgao || '—'}</div>
+          <div class="lic-row-organ">${esc(l.orgao || '—')}</div>
           <div><span class="lic-status ls-${l.status}">${statusLabel(l.status)}</span></div>
           <div style="display:flex;gap:5px">
             <button class="lic-action-btn" onclick="event.stopPropagation();openLicDetail(${l.id})">Ver</button>
@@ -3724,7 +3762,7 @@ function renderLicitacoes(filter = 'todos') {
         <p class="section-subtitle">Acompanhamento de processos licitatórios municipais</p>
       </div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-ai" onclick="openAiLicModal()">✨ Importar com IA</button>
+        <!-- "Importar com IA" escondido em 24/11/2026: chamava a API da Anthropic direto do navegador, sem chave, e sempre dava erro -->
         <button class="btn btn-primary" onclick="openAddLic()">+ Manual</button>
       </div>
     </div>
@@ -3761,7 +3799,7 @@ function openLicDetail(id) {
   document.getElementById('lic-modal-title').textContent = l.nome;
   document.getElementById('lic-modal-badges').innerHTML =
     `<span class="lic-status ls-${l.status}">${statusLabel(l.status)}</span>
-     ${l.sec ? `<span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${l.sec}</span>` : ''}`;
+     ${l.sec ? `<span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${esc(l.sec)}</span>` : ''}`;
 
   const dc = dateClass(l.data);
   const dcColors = { overdue:'color:var(--red)', today:'color:var(--orange)', future:'color:var(--blue)', '':'' };
@@ -3769,8 +3807,8 @@ function openLicDetail(id) {
   document.getElementById('lic-modal-fields').innerHTML = `
     <div class="modal-field"><label>Valor</label><div class="val" style="color:var(--green);font-size:16px">${fmtBRL(l.valor)}</div></div>
     <div class="modal-field"><label>Data da Licitação</label><div class="val" style="${dcColors[dc]}">${fmtDate(l.data)}</div></div>
-    <div class="modal-field"><label>Órgão Responsável</label><div class="val">${l.orgao||'—'}</div></div>
-    <div class="modal-field"><label>Secretaria</label><div class="val">${l.sec||'—'}</div></div>
+    <div class="modal-field"><label>Órgão Responsável</label><div class="val">${esc(l.orgao||'—')}</div></div>
+    <div class="modal-field"><label>Secretaria</label><div class="val">${esc(l.sec||'—')}</div></div>
   `;
 
   document.getElementById('lic-modal-obs').textContent = l.obs || 'Sem observações.';
@@ -3785,7 +3823,7 @@ function openLicDetail(id) {
 
 function changeLicStatus(id, newStatus) {
   if (window._fbReady && window._db) {
-    window._db.collection("licitacoes").doc(String(id)).update({ status: newStatus }).catch(console.error);
+    window._db.collection("licitacoes").doc(String(id)).update({ status: newStatus }).catch(fbErro);
   }
   const lics = JSON.parse(localStorage.getItem('pmLics') || '[]');
   const l = lics.find(x => x.id === id);
@@ -3795,7 +3833,7 @@ function changeLicStatus(id, newStatus) {
 }
 
 function openAddLic() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
   document.getElementById('lf-data').value = today;
   ['lf-nome','lf-valor','lf-orgao','lf-obs'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('lf-status').value = 'agendada';
@@ -3848,7 +3886,7 @@ function confirmDeleteLicFromDetail() {
 
 function deleteLic(id) {
   if (window._fbReady && window._db) {
-    window._db.collection("licitacoes").doc(String(id)).delete().catch(console.error);
+    window._db.collection("licitacoes").doc(String(id)).delete().catch(fbErro);
   }
   const lics = JSON.parse(localStorage.getItem('pmLics') || '[]').filter(x => x.id != id);
   localStorage.setItem('pmLics', JSON.stringify(lics));
@@ -3882,7 +3920,7 @@ function saveLic() {
     // UPDATE existing
     payload.id = Number(editId);
     if (window._fbReady && window._db) {
-      window._db.collection("licitacoes").doc(String(editId)).set(payload).catch(console.error);
+      window._db.collection("licitacoes").doc(String(editId)).set(payload).catch(fbErro);
     }
     const lics = JSON.parse(localStorage.getItem('pmLics') || '[]');
     const idx = lics.findIndex(x => x.id == editId);
@@ -3895,9 +3933,9 @@ function saveLic() {
   } else {
     // CREATE new
     payload.id = Date.now();
-    const lics = getLics();
-    lics.push(payload);
-    saveLics(lics);
+    // grava só a licitação nova (antes regravava todas a partir da cópia local e ressuscitava as excluídas)
+    if (window._fbReady && window._db) window._db.collection('licitacoes').doc(String(payload.id)).set(payload).catch(fbErro);
+    if (window._fbLics) window._fbLics.push(payload);
   }
 
   closeModal('addLicModal');
@@ -3964,8 +4002,8 @@ function buildAlertSections() {
         <div class="alert-item">
           <div class="alert-item-icon" style="background:#fef3c7">⚖️</div>
           <div class="alert-item-body">
-            <div class="alert-item-title">${l.nome}</div>
-            <div class="alert-item-sub">${fmtBRL(l.valor)} · ${l.orgao||'Sem órgão'}</div>
+            <div class="alert-item-title">${esc(l.nome)}</div>
+            <div class="alert-item-sub">${fmtBRL(l.valor)} · ${esc(l.orgao||'Sem órgão')}</div>
           </div>
           <span class="alert-item-tag tag-hoje">Hoje</span>
         </div>`).join('')}
@@ -3979,8 +4017,8 @@ function buildAlertSections() {
         <div class="alert-item">
           <div class="alert-item-icon" style="background:#dbeafe">⚖️</div>
           <div class="alert-item-body">
-            <div class="alert-item-title">${l.nome}</div>
-            <div class="alert-item-sub">${fmtBRL(l.valor)} · ${l.orgao||'Sem órgão'}</div>
+            <div class="alert-item-title">${esc(l.nome)}</div>
+            <div class="alert-item-sub">${fmtBRL(l.valor)} · ${esc(l.orgao||'Sem órgão')}</div>
           </div>
           <span class="alert-item-tag tag-amanha">Amanhã</span>
         </div>`).join('')}
@@ -3994,8 +4032,8 @@ function buildAlertSections() {
         <div class="alert-item">
           <div class="alert-item-icon" style="background:#ede9fe">🏛️</div>
           <div class="alert-item-body">
-            <div class="alert-item-title">${l.nome}</div>
-            <div class="alert-item-sub">${l.orgao||'—'} · ${fmtBRL(l.valor)}</div>
+            <div class="alert-item-title">${esc(l.nome)}</div>
+            <div class="alert-item-sub">${esc(l.orgao||'—')} · ${fmtBRL(l.valor)}</div>
           </div>
           <span class="alert-item-tag tag-externo">Pendente</span>
         </div>`).join('')}
@@ -4011,8 +4049,8 @@ function buildAlertSections() {
         return `<div class="alert-item">
           <div class="alert-item-icon" style="background:#fee2e2">${sec?sec.icon:'📌'}</div>
           <div class="alert-item-body">
-            <div class="alert-item-title">${t.titulo}</div>
-            <div class="alert-item-sub">${sec?sec.nome:''} · ${dateFmt} · ${t.canal||''}</div>
+            <div class="alert-item-title">${esc(t.titulo)}</div>
+            <div class="alert-item-sub">${sec?sec.nome:''} · ${dateFmt} · ${esc(t.canal||'')}</div>
           </div>
           <span class="alert-item-tag tag-atraso">Atrasado</span>
         </div>`;
@@ -4081,10 +4119,10 @@ function renderEquipe(filter = 'semana') {
     { val:'concluidas', label:'Concluídas' },
   ].map(f => `<button class="week-btn ${filter===f.val?'active':''}" onclick="renderEquipe('${f.val}')">${f.label}</button>`).join('');
 
-  const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+  const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7)); // domingo conta na semana que acaba
   const weekEnd   = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
-  const wsStr = weekStart.toISOString().split('T')[0];
-  const weStr = weekEnd.toISOString().split('T')[0];
+  const wsStr = ymdLocal(weekStart);
+  const weStr = ymdLocal(weekEnd);
 
   // Sort: logged-in user always first
   const sortedMembros = [...MEMBROS].sort((a, b) => {
@@ -4115,8 +4153,8 @@ function renderEquipe(filter = 'semana') {
           return `<div class="equipe-task-item" style="cursor:pointer" onclick="switchTabById('${t.secId}');setTimeout(()=>selectDay('${t.secId}','${t.dateStr}'),200)">
             <div class="equipe-task-dot" style="background:${isLate?'var(--red)':dotColor}"></div>
             <div class="equipe-task-info">
-              <div class="equipe-task-title">${t.titulo}</div>
-              <div class="equipe-task-meta">${t.secIcon} ${t.secNome} · ${isLate?'<span style="color:var(--red);font-weight:600">⚠ '+dateFmt+'</span>':dateFmt} · ${t.horario||'—'} · ${t.tipo||''}</div>
+              <div class="equipe-task-title">${esc(t.titulo)}</div>
+              <div class="equipe-task-meta">${t.secIcon} ${t.secNome} · ${isLate?'<span style="color:var(--red);font-weight:600">⚠ '+dateFmt+'</span>':dateFmt} · ${t.horario||'—'} · ${esc(t.tipo||'')}</div>
             </div>
             ${t.prioridade==='alta'?'<span class="badge badge-alta" style="font-size:9px">ALTA</span>':''}
           </div>`;
@@ -4199,10 +4237,10 @@ function renderPendentesMembro(nome) {
     return `<div class="pend-item">
       <div class="pend-dot" style="background:${isLate?'var(--red)':sc}"></div>
       <div class="pend-info">
-        <div class="pend-title" style="cursor:pointer" onclick="switchTabById('${t.secId}');setTimeout(()=>selectDay('${t.secId}','${t.dateStr}'),200)">${t.titulo}</div>
+        <div class="pend-title" style="cursor:pointer" onclick="switchTabById('${t.secId}');setTimeout(()=>selectDay('${t.secId}','${t.dateStr}'),200)">${esc(t.titulo)}</div>
         <div class="pend-meta">
           <span style="font-weight:600;color:${isLate?'var(--red)':'inherit'}">${dateFmt}${isLate?' ⚠':''}</span>
-          · ${t.secIcon} ${t.secNome} · ${t.tipo||'—'} · ${t.canal||'—'}
+          · ${t.secIcon} ${t.secNome} · ${esc(t.tipo||'—')} · ${esc(t.canal||'—')}
           · <span style="color:${sc};font-weight:600">${sl}</span>
         </div>
       </div>
@@ -4397,9 +4435,8 @@ function saveAiLic() {
     sec:    document.getElementById('ai-sec').value,
     obs
   };
-  const lics = getLics();
-  lics.push(payload);
-  saveLics(lics);
+  if (window._fbReady && window._db) window._db.collection('licitacoes').doc(String(payload.id)).set(payload).catch(fbErro);
+  if (window._fbLics) window._fbLics.push(payload);
   closeModal('aiLicModal');
   renderLicitacoes();
 }
@@ -4428,7 +4465,7 @@ function getSocialData() {
 function saveSocialData(d) {
   localStorage.setItem('pmSocial', JSON.stringify(d));
   if (window._fbReady && window._db) {
-    window._db.collection("config").doc("social").set(d).catch(console.error);
+    window._db.collection("config").doc("social").set(d).catch(fbErro);
   }
 }
 
@@ -4836,7 +4873,7 @@ function saveMetas() {
   }
   function saveOsConfig(cfg){
     localStorage.setItem('pmOsConfig', JSON.stringify(cfg));
-    if (window._fbReady && window._db) window._db.collection('config').doc('os').set(cfg).catch(console.error);
+    if (window._fbReady && window._db) window._db.collection('config').doc('os').set(cfg).catch(fbErro);
     applyHeaderUser();
   }
   function fileToDataUrl(file, cb){ const r = new FileReader(); r.onload = () => cb(r.result); r.readAsDataURL(file); }
@@ -4995,7 +5032,7 @@ function saveMetas() {
     _origSaveOsConfig(cfg);
     updateSidebarUser();
   };
-  setTimeout(updateSidebarUser, 300);
+  setTimeout(() => { if (!localStorage.getItem('pmActiveUser')) updateSidebarUser(); }, 300); // não troca o perfil escolhido por 'Durval'
 
   // ── Override switchTab to sync sidebar active state ──
   const _navSwitch = window.switchTab;

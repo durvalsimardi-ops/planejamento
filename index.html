@@ -1740,6 +1740,15 @@
   --blue-glow: var(--blue-light);
 
 </style>
+<script>
+// ── Funções usadas pelo site todo (24/11/2026). Ficam fora do bloco do Firebase: se o Firebase não carregar, o site continua abrindo.
+// Escapa texto antes de ir para o innerHTML (um título digitado não roda código no navegador dos outros).
+window.esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Hoje no fuso do computador (toISOString usava UTC e virava o dia às 21h).
+window.ymdLocal = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+// Erro de gravação aparece para quem salvou, em vez de sumir no console.
+window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.updateSyncIndicator(false); alert('Não salvou no servidor: ' + (e && e.message || e)); };
+</script>
 <!-- Firebase via CDN compat (works everywhere) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -1762,34 +1771,43 @@
   window._fbReady = true;
 
   // ── Correções de 24/11/2026 ──
-  // Escapa texto digitado antes de ir para o innerHTML (evita que um título rode código no navegador dos outros).
-  window.esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  // Erro de gravação aparece para quem salvou, em vez de sumir no console.
-  window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.updateSyncIndicator(false); alert('Não salvou no servidor: ' + (e && e.message || e)); };
   // Grava um dia lendo a versão do servidor na hora (transação): duas pessoas salvando ao mesmo tempo não apagam o pedido uma da outra.
+  // Sem internet a transação não roda: grava com set (fica na fila do Firebase e sobe quando a conexão volta).
+  // Outro erro (ex.: regra negando): avisa e volta a tela para o que está no servidor.
+  const semRede = e => !navigator.onLine || (e && (e.code === 'unavailable' || e.code === 'deadline-exceeded'));
+  const desfaz = keys => { if (!window.state) return; keys.forEach(k => { window.state._tasks[k] = JSON.parse(JSON.stringify((window._srvTasks || {})[k] || [])); }); window._rerenderTasks && window._rerenderTasks(); };
   window.updateDay = (key, fn) => {
     const ref = db.collection('tasks').doc(key);
-    return db.runTransaction(async tx => {
+    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
       const s = await tx.get(ref);
       const list = fn(s.exists ? (s.data().list || []) : []);
       tx.set(ref, { list });
       return list;
-    }).then(list => { if (window.state) { window.state._tasks = window.state._tasks || {}; window.state._tasks[key] = list; } return list; })
-      .catch(window.fbErro);
+    }).catch(e => {
+      if (semRede(e)) { ref.set({ list: fn((window._srvTasks || {})[key] || []) }); alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return; }
+      desfaz([key]); window.fbErro(e);
+    });
   };
   // Muda um pedido de dia numa transação só (não some dos dois dias se a rede cair no meio).
   window.moveTask = (oldKey, newKey, id, upd) => {
     const refOld = db.collection('tasks').doc(oldKey), refNew = db.collection('tasks').doc(newKey);
-    return db.runTransaction(async tx => {
+    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
       const a = await tx.get(refOld), b = oldKey === newKey ? a : await tx.get(refNew);
       const old = ((a.exists && a.data().list) || []).filter(t => t.id != id);
       if (oldKey === newKey) { tx.set(refOld, { list: [...old, upd] }); return; }
       tx.set(refOld, { list: old });
       tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
-    }).catch(window.fbErro);
+    }).catch(e => {
+      if (semRede(e)) {
+        const srv = window._srvTasks || {}, batch = db.batch();
+        const old = (srv[oldKey] || []).filter(t => t.id != id);
+        if (oldKey === newKey) batch.set(refOld, { list: [...old, upd] });
+        else { batch.set(refOld, { list: old }); batch.set(refNew, { list: [...(srv[newKey] || []).filter(t => t.id != id), upd] }); }
+        batch.commit(); alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return;
+      }
+      desfaz([oldKey, newKey]); window.fbErro(e);
+    });
   };
-  // Hoje no fuso do computador (toISOString usava UTC e virava o dia às 21h).
-  window.ymdLocal = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
   // Mídias Sociais e Configurações: recebe o que os outros salvaram (antes só lia o localStorage deste navegador).
   db.collection('config').doc('social').onSnapshot(s => {
@@ -1815,9 +1833,17 @@
     const tasks = {};
     // só chaves no padrão secretaria_AAAA-MM-DD (as antigas _wN_dN já foram copiadas para esse formato em 24/11/2026)
     snap.forEach(d => { if (/^[a-z]+_\d{4}-\d{2}-\d{2}$/.test(d.id)) tasks[d.id] = d.data().list || []; });
+    window._srvTasks = JSON.parse(JSON.stringify(tasks)); // cópia do servidor, para desfazer/gravar offline
     window._state_tasks = tasks;
+    if (window.state) window.state._tasks = tasks;
+    window._rerenderTasks();
+    if (!snap.metadata.fromCache) window.updateSyncIndicator && window.updateSyncIndicator(true);
+  }, err => {
+    console.error("Firestore tasks error:", err);
+    window.updateSyncIndicator && window.updateSyncIndicator(false);
+  });
+  function _rerenderTasks_impl() {
     if (window.state) {
-      window.state._tasks = tasks;
       const activeTab = document.querySelector('.nav-tab.active');
       if (activeTab) {
         const tabId = activeTab.dataset.tab;
@@ -1838,11 +1864,8 @@
         }
       }
     }
-    if (!snap.metadata.fromCache) window.updateSyncIndicator && window.updateSyncIndicator(true);
-  }, err => {
-    console.error("Firestore tasks error:", err);
-    window.updateSyncIndicator && window.updateSyncIndicator(false);
-  });
+  }
+  window._rerenderTasks = _rerenderTasks_impl;
 
   // Listen LICITACOES
   db.collection("licitacoes").onSnapshot(snap => {
@@ -2779,25 +2802,25 @@ function renderDayPanel(secId, dateStr) {
         const tc = typeColors[t.tipo] || '#f1f5f9';
         const tt = typeTextColors[t.tipo] || '#475569';
         const opacity = t.status === 'concluido' ? 'opacity:.55' : '';
-        return `<div class="dp-task ${t.prioridade||'media'}" style="${opacity}">
+        return `<div class="dp-task ${esc(t.prioridade||'media')}" style="${opacity}">
           <div style="flex-shrink:0;margin-top:1px">
             <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:${tc};color:${tt};white-space:nowrap">${esc(t.tipo||'—')}</span>
           </div>
           <div class="dp-task-body">
-            <div class="dp-task-title" onclick="openDetailByDate('${secId}','${dateStr}',${t.id})">${esc(t.titulo)}</div>
+            <div class="dp-task-title" onclick="openDetailByDate('${secId}','${dateStr}',${Number(t.id)})">${esc(t.titulo)}</div>
             <div class="dp-task-meta">
               <span>📡 ${esc(t.canal||'—')}</span>
-              <span>⏰ ${t.horario||'—'}</span>
+              <span>⏰ ${esc(t.horario||'—')}</span>
               ${t.responsavel ? `<span>👤 ${esc(t.responsavel)}</span>` : ''}
               <span style="color:${sc};font-weight:600">● ${sl}</span>
             </div>
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0">
-            <button onclick="openEditTaskByDate('${secId}','${dateStr}',${t.id})"
+            <button onclick="openEditTaskByDate('${secId}','${dateStr}',${Number(t.id)})"
               style="border:none;background:none;cursor:pointer;font-size:13px;padding:3px 5px;border-radius:5px;color:var(--gray-400)" title="Editar">✏️</button>
-            <button onclick="toggleDoneTask('${secId}','${dateStr}',${t.id})"
+            <button onclick="toggleDoneTask('${secId}','${dateStr}',${Number(t.id)})"
               style="border:none;background:none;cursor:pointer;font-size:15px;padding:3px 5px;border-radius:5px;color:${t.status==='concluido'?'var(--green)':'var(--gray-400)'};transition:color .15s" title="${t.status==='concluido'?'Marcar como pendente':'Marcar como concluído'}">✓</button>
-            <button onclick="deleteTaskByDate('${secId}','${dateStr}',${t.id})"
+            <button onclick="deleteTaskByDate('${secId}','${dateStr}',${Number(t.id)})"
               style="border:none;background:none;cursor:pointer;font-size:13px;padding:3px 5px;border-radius:5px;color:var(--gray-400)" title="Excluir">🗑️</button>
           </div>
         </div>`;
@@ -2841,7 +2864,7 @@ function openDetailByDate(secId, dateStr, taskId) {
   document.getElementById('modal-fields').innerHTML = `
     <div class="modal-field"><label>Responsável</label><div class="val">👤 ${esc(task.responsavel||'—')}</div></div>
     <div class="modal-field"><label>Canal / Mídia</label><div class="val">📡 ${esc(task.canal||'—')}</div></div>
-    <div class="modal-field"><label>Prazo</label><div class="val">⏰ ${task.horario||'—'} · ${task.dataPrazo && isValidDate(task.dataPrazo) ? fmtDate(task.dataPrazo) : (isValidDate(dateStr) ? fmtDate(dateStr) : '—')}</div></div>
+    <div class="modal-field"><label>Prazo</label><div class="val">⏰ ${esc(task.horario||'—')} · ${task.dataPrazo && isValidDate(task.dataPrazo) ? fmtDate(task.dataPrazo) : (isValidDate(dateStr) ? fmtDate(dateStr) : '—')}</div></div>
     <div class="modal-field"><label>Aprovação</label><div class="val">✔️ ${esc(task.aprovacao||'—')}</div></div>
     <div class="modal-field"><label>Secretaria</label><div class="val">${s.icon} ${s.nome}</div></div>
     <div class="modal-field"><label>Data</label><div class="val">📅 ${dateFmt2.charAt(0).toUpperCase() + dateFmt2.slice(1)}</div></div>
@@ -3736,7 +3759,7 @@ function renderLicitacoes(filter = 'todos') {
     : filtered.map(l => {
         const dc = dateClass(l.data);
         const dcLabel = { overdue:'⚠ Vencida', today:'Hoje', future:'', '':'' }[dc];
-        return `<div class="lic-row" onclick="openLicDetail(${l.id})">
+        return `<div class="lic-row" onclick="openLicDetail(${Number(l.id)})">
           <div>
             <div class="lic-row-title">${esc(l.nome)}</div>
             <div class="lic-row-sub">${esc(l.sec || '—')}</div>
@@ -3746,11 +3769,11 @@ function renderLicitacoes(filter = 'todos') {
             <div class="lic-row-date ${dc}">${fmtDate(l.data)} ${dcLabel ? `<span style="font-size:10px">${dcLabel}</span>` : ''}</div>
           </div>
           <div class="lic-row-organ">${esc(l.orgao || '—')}</div>
-          <div><span class="lic-status ls-${l.status}">${statusLabel(l.status)}</span></div>
+          <div><span class="lic-status ls-${esc(l.status)}">${statusLabel(l.status)}</span></div>
           <div style="display:flex;gap:5px">
-            <button class="lic-action-btn" onclick="event.stopPropagation();openLicDetail(${l.id})">Ver</button>
-            <button class="lic-action-btn" style="color:var(--blue);border-color:var(--blue)" onclick="event.stopPropagation();openEditLic(${l.id})">✏️</button>
-            <button class="lic-action-btn" style="color:var(--red);border-color:var(--red)" onclick="event.stopPropagation();confirmDeleteLic(${l.id})">🗑️</button>
+            <button class="lic-action-btn" onclick="event.stopPropagation();openLicDetail(${Number(l.id)})">Ver</button>
+            <button class="lic-action-btn" style="color:var(--blue);border-color:var(--blue)" onclick="event.stopPropagation();openEditLic(${Number(l.id)})">✏️</button>
+            <button class="lic-action-btn" style="color:var(--red);border-color:var(--red)" onclick="event.stopPropagation();confirmDeleteLic(${Number(l.id)})">🗑️</button>
           </div>
         </div>`;
       }).join('');
@@ -3786,7 +3809,7 @@ function renderLicitacoes(filter = 'todos') {
 }
 
 function statusLabel(s) {
-  return { agendada:'📅 Agendada', aguardando:'⏳ Aguardando Externo', concluida:'✅ Concluída' }[s] || s;
+  return { agendada:'📅 Agendada', aguardando:'⏳ Aguardando Externo', concluida:'✅ Concluída' }[s] || esc(s);
 }
 
 let _currentLicId = null;
@@ -3798,7 +3821,7 @@ function openLicDetail(id) {
 
   document.getElementById('lic-modal-title').textContent = l.nome;
   document.getElementById('lic-modal-badges').innerHTML =
-    `<span class="lic-status ls-${l.status}">${statusLabel(l.status)}</span>
+    `<span class="lic-status ls-${esc(l.status)}">${statusLabel(l.status)}</span>
      ${l.sec ? `<span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${esc(l.sec)}</span>` : ''}`;
 
   const dc = dateClass(l.data);
@@ -3936,6 +3959,7 @@ function saveLic() {
     // grava só a licitação nova (antes regravava todas a partir da cópia local e ressuscitava as excluídas)
     if (window._fbReady && window._db) window._db.collection('licitacoes').doc(String(payload.id)).set(payload).catch(fbErro);
     if (window._fbLics) window._fbLics.push(payload);
+    else { const ll = JSON.parse(localStorage.getItem('pmLics') || '[]'); ll.push(payload); localStorage.setItem('pmLics', JSON.stringify(ll)); }
   }
 
   closeModal('addLicModal');
@@ -4154,7 +4178,7 @@ function renderEquipe(filter = 'semana') {
             <div class="equipe-task-dot" style="background:${isLate?'var(--red)':dotColor}"></div>
             <div class="equipe-task-info">
               <div class="equipe-task-title">${esc(t.titulo)}</div>
-              <div class="equipe-task-meta">${t.secIcon} ${t.secNome} · ${isLate?'<span style="color:var(--red);font-weight:600">⚠ '+dateFmt+'</span>':dateFmt} · ${t.horario||'—'} · ${esc(t.tipo||'')}</div>
+              <div class="equipe-task-meta">${t.secIcon} ${t.secNome} · ${isLate?'<span style="color:var(--red);font-weight:600">⚠ '+dateFmt+'</span>':dateFmt} · ${esc(t.horario||'—')} · ${esc(t.tipo||'')}</div>
             </div>
             ${t.prioridade==='alta'?'<span class="badge badge-alta" style="font-size:9px">ALTA</span>':''}
           </div>`;
@@ -4437,6 +4461,7 @@ function saveAiLic() {
   };
   if (window._fbReady && window._db) window._db.collection('licitacoes').doc(String(payload.id)).set(payload).catch(fbErro);
   if (window._fbLics) window._fbLics.push(payload);
+  else { const ll = JSON.parse(localStorage.getItem('pmLics') || '[]'); ll.push(payload); localStorage.setItem('pmLics', JSON.stringify(ll)); }
   closeModal('aiLicModal');
   renderLicitacoes();
 }
@@ -4980,10 +5005,10 @@ function saveMetas() {
     const licExterno = lics.filter(l=>l.status==='aguardando');
     let atrasadas=[]; Object.keys(state.tasks).forEach(k=>{ const secId=SECRETARIAS.map(s=>s.id).find(id=>k.startsWith(id+'_')); if(!secId)return; const dateStr=k.replace(secId+'_',''); if(dateStr<today){ (state.tasks[k]||[]).filter(t=>t.status!=='concluido').forEach(t=>atrasadas.push({...t,dateStr,secId})); } });
     let sections=''; const block=(title,items)=>`<div class="alert-section"><h4>${title}</h4>${items}</div>`;
-    if(licHoje.length) sections+=block('Sinais críticos de hoje', licHoje.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${l.id})"><div class="alert-item-icon">⚖️</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${fmtBRL(l.valor)} · ${escapeHtml(l.orgao||'Sem órgão')}</div></div><span class="alert-item-tag tag-hoje">Hoje</span></div>`).join(''));
-    if(licAmanha.length) sections+=block('Próximas decisões', licAmanha.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${l.id})"><div class="alert-item-icon">↗</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${fmtBRL(l.valor)} · ${escapeHtml(l.orgao||'Sem órgão')}</div></div><span class="alert-item-tag tag-amanha">Amanhã</span></div>`).join(''));
-    if(licExterno.length) sections+=block('Dependências externas', licExterno.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${l.id})"><div class="alert-item-icon">⌁</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${escapeHtml(l.orgao||'—')} · ${fmtBRL(l.valor)}</div></div><span class="alert-item-tag tag-externo">Pendente</span></div>`).join(''));
-    if(atrasadas.length) sections+=block('Execuções em atraso', atrasadas.slice(0,6).map(t=>{ const sec=SECRETARIAS.find(s=>s.id===t.secId); const dateFmt=new Date(t.dateStr+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); return `<div class="alert-item" onclick="openAlertTarget('task',null,'${t.secId}','${t.dateStr}',${t.id})"><div class="alert-item-icon">${sec?sec.icon:'•'}</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(t.titulo)}</div><div class="alert-item-sub">${escapeHtml(sec?sec.nome:'')} · ${dateFmt} · ${escapeHtml(t.canal||'')}</div></div><span class="alert-item-tag tag-atraso">Atrasado</span></div>`; }).join('') + (atrasadas.length>6?`<div style="font-size:12px;color:var(--os-muted);padding:8px 0">+${atrasadas.length-6} outros sinais em atraso</div>`:''));
+    if(licHoje.length) sections+=block('Sinais críticos de hoje', licHoje.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${Number(l.id)})"><div class="alert-item-icon">⚖️</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${fmtBRL(l.valor)} · ${escapeHtml(l.orgao||'Sem órgão')}</div></div><span class="alert-item-tag tag-hoje">Hoje</span></div>`).join(''));
+    if(licAmanha.length) sections+=block('Próximas decisões', licAmanha.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${Number(l.id)})"><div class="alert-item-icon">↗</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${fmtBRL(l.valor)} · ${escapeHtml(l.orgao||'Sem órgão')}</div></div><span class="alert-item-tag tag-amanha">Amanhã</span></div>`).join(''));
+    if(licExterno.length) sections+=block('Dependências externas', licExterno.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${Number(l.id)})"><div class="alert-item-icon">⌁</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${escapeHtml(l.orgao||'—')} · ${fmtBRL(l.valor)}</div></div><span class="alert-item-tag tag-externo">Pendente</span></div>`).join(''));
+    if(atrasadas.length) sections+=block('Execuções em atraso', atrasadas.slice(0,6).map(t=>{ const sec=SECRETARIAS.find(s=>s.id===t.secId); const dateFmt=new Date(t.dateStr+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); return `<div class="alert-item" onclick="openAlertTarget('task',null,'${t.secId}','${t.dateStr}',${Number(t.id)})"><div class="alert-item-icon">${sec?sec.icon:'•'}</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(t.titulo)}</div><div class="alert-item-sub">${escapeHtml(sec?sec.nome:'')} · ${dateFmt} · ${escapeHtml(t.canal||'')}</div></div><span class="alert-item-tag tag-atraso">Atrasado</span></div>`; }).join('') + (atrasadas.length>6?`<div style="font-size:12px;color:var(--os-muted);padding:8px 0">+${atrasadas.length-6} outros sinais em atraso</div>`:''));
     return sections || `<div class="alert-empty">Tudo em ordem no momento. Nenhum sinal crítico para hoje.</div>`;
   }
   const oldOpenAlert = window.openDailyAlert;

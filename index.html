@@ -268,7 +268,7 @@
   }
 
   .countdown {
-    display: flex;
+    display: flex; flex-wrap: wrap; justify-content: center; row-gap: 2px;
     align-items: center;
     gap: 5px;
     background: var(--glass);
@@ -417,7 +417,7 @@
   .stat-card .sub { font-size: 11px; color: var(--fg-3); }
   .stat-card .stat-icon {
     position: absolute; top: 14px; right: 16px;
-    font-size: 24px; opacity: .08;
+    font-size: 24px; opacity: .35;
   }
 
   /* ─── OVERVIEW GRID ─── */
@@ -698,11 +698,11 @@
     to   { opacity: 1; transform: translateY(0)  scale(1); }
   }
   .modal-header {
-    padding: 20px 22px 16px;
+    padding: 14px 18px 14px 22px;
     border-bottom: 1px solid var(--glass-border);
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
   }
   .modal-header h2 {
     font-size: 17px;
@@ -1103,7 +1103,7 @@
     border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(20px);
   }
   .lic-table-header {
-    display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.1fr) 124px;
+    display: grid; grid-template-columns: minmax(0,1.6fr) 118px 100px minmax(0,1fr) 156px 124px;
     padding: 10px 16px;
     background: rgba(255,255,255,.03);
     border-bottom: 1px solid var(--glass-border);
@@ -1111,7 +1111,7 @@
     letter-spacing: .5px; color: var(--fg-3); gap: 10px;
   }
   .lic-row {
-    display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.1fr) 124px;
+    display: grid; grid-template-columns: minmax(0,1.6fr) 118px 100px minmax(0,1fr) 156px 124px;
     padding: 13px 16px; border-bottom: 1px solid var(--glass-border);
     gap: 10px; align-items: center; transition: background .15s; cursor: pointer;
   }
@@ -1357,9 +1357,18 @@
     transition: background .15s;
   }
   .hist-row:last-child { border-bottom: none; }
-  @media (max-width: 600px) { .hist-table { overflow-x: auto; } .hist-header, .hist-row { min-width: 560px; } }
+  @media (max-width: 600px) {
+    .hist-table { overflow-x: auto; background: linear-gradient(to left, rgba(0,0,0,.45), transparent 24px) right / 24px 100% no-repeat; }
+    .hist-header, .hist-row { min-width: 560px; }
+    .hist-header > :first-child, .hist-row > :first-child { position: sticky; left: 0; background: var(--bg-card, #161616); z-index: 1; }
+  }
+  @media (max-width: 1180px) and (min-width: 769px) {
+    .lic-table-header > :nth-child(4), .lic-row > :nth-child(4) { display: none; }
+    .lic-table-header, .lic-row { grid-template-columns: minmax(0,1.6fr) 118px 100px 156px 124px !important; }
+  }
+  .lic-status { white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; display: inline-block; }
   .hist-row:hover { background: var(--glass); }
-  .scb:not(.atual) { opacity: .55; } .scb.atual { box-shadow: 0 0 0 2px currentColor; }
+  .scb:not(.atual) { opacity: .8; filter: saturate(.6); } .scb.atual { box-shadow: 0 0 0 2px currentColor; }
   .hist-mes   { font-size: 13px; font-weight: 600; color: var(--fg); }
   .hist-val   { font-size: 13px; color: var(--fg-2); }
   .hist-delta { font-size: 11px; font-weight: 600; }
@@ -1728,6 +1737,13 @@
     /* licitação no celular: data aparece embaixo do título */
     .lic-row > *:nth-child(3) { display: block !important; grid-column: 1 / -1; }
     .sidebar-brand { padding-left: 64px; }
+    .form-control { min-height: 44px; }
+    .form-row { grid-template-columns: 1fr !important; gap: 0 !important; }
+    .lic-form-row { grid-template-columns: 1fr !important; gap: 0 !important; }
+    .home-section-link { white-space: nowrap; min-height: 44px; display: flex; align-items: center; }
+    .modal-footer .btn { flex: 1 1 auto; }
+    .mob-menu-btn { top: 4px !important; }
+    #headerDate { font-weight: 600; color: var(--fg) !important; font-size: 14px !important; }
     .user-row { flex-wrap: wrap; gap: 8px; }
   }
   @media (max-width: 760px) {
@@ -1773,7 +1789,15 @@ window.esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&l
 window.dataCurta = ds => { const d = new Date(ds + 'T12:00'); return d.toLocaleDateString('pt-BR', d.getFullYear() === new Date().getFullYear() ? { day:'2-digit', month:'2-digit' } : { day:'2-digit', month:'2-digit', year:'numeric' }); };
 window.ymdLocal = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 // Erro de gravação aparece para quem salvou, em vez de sumir no console.
-window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.updateSyncIndicator(false); alert('Não salvou no servidor: ' + (e && e.message || e)); };
+window.fbErro = e => {
+  console.error(e);
+  const c = e && e.code;
+  const msg = (c === 'aborted' || c === 'failed-precondition') ? 'muita gente salvou ao mesmo tempo. Tente de novo.'
+    : c === 'permission-denied' ? 'sem permissão para salvar.'
+    : c === 'not-found' ? 'o item não existe mais (outra pessoa pode ter excluído).'
+    : (e && e.message || e);
+  alert('Não salvou: ' + msg);
+};
 </script>
 <!-- Firebase via CDN compat (works everywhere) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1801,78 +1825,85 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
   // Sem internet a transação não roda: grava com set (fica na fila do Firebase e sobe quando a conexão volta).
   // Outro erro (ex.: regra negando): avisa e volta a tela para o que está no servidor.
   const semRede = e => !navigator.onLine || (e && (e.code === 'unavailable' || e.code === 'deadline-exceeded'));
-  const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-  const FV = () => firebase.firestore.FieldValue;
+  const disputa = e => e && (e.code === 'aborted' || e.code === 'failed-precondition');
   const copia = x => JSON.parse(JSON.stringify(x ?? null));
-  // Lista de pedidos: tira o que saiu e acrescenta o que entrou, item a item.
-  const gravarDiferencaLista = (ref, antes, depois) => {
-    const tirar = antes.filter(a => !depois.some(b => igual(a, b)));
-    const por = depois.filter(b => !antes.some(a => igual(a, b)));
-    if (tirar.length) ref.set({ list: FV().arrayRemove(...tirar) }, { merge: true });
-    if (por.length) ref.set({ list: FV().arrayUnion(...por) }, { merge: true });
-  };
-  // Documento de config: listas item a item, demais campos só se mudaram.
-  const gravarDiferencaDoc = (ref, antes, depois) => {
-    Object.keys({ ...antes, ...depois }).forEach(k => {
-      const a = antes[k], b = depois[k];
-      if (igual(a, b)) return;
-      if (Array.isArray(a) && Array.isArray(b)) gravarDiferencaLista({ set: (o, m) => ref.set({ [k]: o.list }, m) }, a, b);
-      else ref.set({ [k]: b === undefined ? FV().delete() : b }, { merge: true });
-    });
-  };
   // id = milissegundo × 1000 + contador desta aba (começa num ponto aleatório): nunca repete na mesma aba e quase nunca entre pessoas
-  let _seqId = Math.floor(Math.random() * 1000), _ultMs = 0;
-  window.novoId = () => { const ms = Date.now(); if (ms !== _ultMs) { _ultMs = ms; } _seqId = (_seqId + 1) % 1000; return ms * 1000 + _seqId; };
-  const desfaz = keys => { if (!window.state) return; keys.forEach(k => { window.state._tasks[k] = JSON.parse(JSON.stringify((window._srvTasks || {})[k] || [])); }); window._rerenderTasks && window._rerenderTasks(); };
+  let _seqId = Math.floor(Math.random() * 1000);
+  window.novoId = () => { _seqId = (_seqId + 1) % 1000; return Date.now() * 1000 + _seqId; };
+  const desfaz = keys => { if (!window.state) return; keys.forEach(k => { window.state._tasks[k] = copia((window._srvTasks || {})[k] || []); }); window._rerenderTasks && window._rerenderTasks(); };
+
+  // ── Toda gravação passa por aqui ──
+  // Transação (lê o servidor na hora). Se muita gente salvou o mesmo dia ao mesmo tempo, tenta de novo.
+  // Sem internet, a mudança vai para uma fila desta aba e roda como transação quando a conexão volta:
+  // assim não duplica nem apaga o que os outros salvaram. Fechar a aba antes disso perde a mudança (por isso o aviso ao fechar).
+  window._fila = []; window._gravando = 0;
+  let _avisouOffline = false;
+  const avisarOffline = () => {
+    window.updateSyncIndicator && window.updateSyncIndicator(false);
+    if (!_avisouOffline) { _avisouOffline = true; alert('Sem internet: a mudança ficou guardada nesta aba e sobe sozinha quando a conexão voltar. Não feche esta aba até lá.'); }
+  };
+  const tentar = (fazer, aoFalhar) => {
+    window._gravando++;
+    const vai = async () => {
+      for (let i = 0; ; i++) {
+        try {
+          if (!navigator.onLine) throw { code: 'unavailable' };
+          const r = await db.runTransaction(fazer);
+          window.updateSyncIndicator && window.updateSyncIndicator(true);
+          return r;
+        } catch (e) {
+          if (disputa(e) && i < 5) { await new Promise(r => setTimeout(r, 150 + Math.random() * 400 * (i + 1))); continue; }
+          throw e;
+        }
+      }
+    };
+    return vai().catch(e => {
+      if (semRede(e)) { window._fila.push(() => tentar(fazer, aoFalhar)); avisarOffline(); return; }
+      aoFalhar(e);
+    }).finally(() => { window._gravando--; });
+  };
+  const esvaziarFila = () => {
+    if (!navigator.onLine || !window._fila.length) return;
+    const f = window._fila; window._fila = []; _avisouOffline = false;
+    f.forEach(run => run());
+  };
+  window.addEventListener('online', () => setTimeout(esvaziarFila, 1500));
+  setInterval(esvaziarFila, 15000);
+  window.addEventListener('beforeunload', e => { if (window._fila.length || window._gravando > 0) { e.preventDefault(); e.returnValue = ''; } });
+
   window.updateDay = (key, fn) => {
     const ref = db.collection('tasks').doc(key);
-    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
+    return tentar(async tx => {
       const s = await tx.get(ref);
       const list = fn(s.exists ? (s.data().list || []) : []);
       tx.set(ref, { list });
       return list;
-    }).catch(e => {
-      if (semRede(e)) { const antes = copia((window._srvTasks || {})[key] || []); gravarDiferencaLista(ref, antes, fn(copia(antes))); alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return; }
-      desfaz([key]); window.fbErro(e);
-    });
+    }, e => { desfaz([key]); window.fbErro(e); });
   };
   // Muda um pedido de dia numa transação só (não some dos dois dias se a rede cair no meio).
   window.moveTask = (oldKey, newKey, id, upd) => {
     const refOld = db.collection('tasks').doc(oldKey), refNew = db.collection('tasks').doc(newKey);
-    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
+    return tentar(async tx => {
       const a = await tx.get(refOld), b = oldKey === newKey ? a : await tx.get(refNew);
       const old = ((a.exists && a.data().list) || []).filter(t => t.id != id);
       if (oldKey === newKey) { tx.set(refOld, { list: [...old, upd] }); return; }
       tx.set(refOld, { list: old });
       tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
-    }).catch(e => {
-      if (semRede(e)) {
-        const srv = window._srvTasks || {}, a = copia(srv[oldKey] || []), b = copia(srv[newKey] || []);
-        if (oldKey === newKey) gravarDiferencaLista(refOld, a, [...a.filter(t => t.id != id), upd]);
-        else { gravarDiferencaLista(refOld, a, a.filter(t => t.id != id)); gravarDiferencaLista(refNew, b, [...b.filter(t => t.id != id), upd]); }
-        alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return;
-      }
-      desfaz([oldKey, newKey]); window.fbErro(e);
-    });
+    }, e => { desfaz([oldKey, newKey]); window.fbErro(e); });
   };
-
-  // Muda um documento de config lendo a versão do servidor na hora (transação): quem salva por último não apaga o que o outro salvou.
-  // Sem internet, aplica a mudança na última cópia conhecida e grava com set (fila do Firebase).
+  // Muda um documento de config lendo a versão do servidor na hora: quem salva por último não apaga o que o outro salvou.
   window.mutarConfig = (docId, fn, base) => {
     const ref = db.collection('config').doc(docId);
-    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
+    return tentar(async tx => {
       const s = await tx.get(ref);
-      const d = s.exists ? s.data() : JSON.parse(JSON.stringify(base || {}));
+      const d = s.exists ? s.data() : copia(base || {});
       fn(d); tx.set(ref, d);
-    }).catch(e => {
-      if (semRede(e)) { const antes = copia((window._srvConfig || {})[docId] || base || {}); const d = copia(antes); fn(d); gravarDiferencaDoc(ref, antes, d); return; }
-      window.fbErro(e);
-    });
+    }, e => window.fbErro(e));
   };
-
+  // Edita um pedido aplicando só os campos mudados sobre a versão do servidor; se foi excluído, não volta.
   window.editarTask = (oldKey, newKey, id, mudou) => {
     const refOld = db.collection('tasks').doc(oldKey), refNew = db.collection('tasks').doc(newKey);
-    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
+    return tentar(async tx => {
       const a = await tx.get(refOld), b = oldKey === newKey ? a : await tx.get(refNew);
       const la = (a.exists && a.data().list) || [];
       const cur = la.find(t => t.id == id);
@@ -1881,17 +1912,10 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
       if (oldKey === newKey) { tx.set(refOld, { list: la.map(t => t.id == id ? upd : t) }); return; }
       tx.set(refOld, { list: la.filter(t => t.id != id) });
       tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
-    }).catch(e => {
-      if (e && e.code === 'sumiu') { desfaz([oldKey, newKey]); alert('Esse pedido foi excluído por outra pessoa enquanto você editava. Nada foi salvo.'); return; }
-      if (semRede(e)) {
-        const srv = window._srvTasks || {}, a = copia(srv[oldKey] || []), b = copia(srv[newKey] || []);
-        const cur = a.find(t => t.id == id); if (!cur) return;
-        const upd = { ...cur, ...mudou };
-        if (oldKey === newKey) gravarDiferencaLista(refOld, a, a.map(t => t.id == id ? upd : t));
-        else { gravarDiferencaLista(refOld, a, a.filter(t => t.id != id)); gravarDiferencaLista(refNew, b, [...b.filter(t => t.id != id), upd]); }
-        alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return;
-      }
-      desfaz([oldKey, newKey]); window.fbErro(e);
+    }, e => {
+      desfaz([oldKey, newKey]);
+      if (e && e.code === 'sumiu') alert('Esse pedido foi excluído por outra pessoa enquanto você editava. Nada foi salvo.');
+      else window.fbErro(e);
     });
   };
 
@@ -2108,7 +2132,7 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
     <div class="today-badge">
       <span id="headerDate" style="color:rgba(255,255,255,.4);font-size:12px"></span>
     </div>
-    <div class="countdown" title="Tempo até segunda-feira, 8h" id="countdown" aria-label="Tempo até segunda-feira, 8h"><div class="countdown-block" style="font-size:9px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.5px;line-height:1.2;text-align:right;margin-right:4px">até<br>seg. 8h</div>
+    <div class="countdown" title="Tempo até segunda-feira, 8h" id="countdown" aria-label="Tempo até segunda-feira, 8h"><div style="flex-basis:100%;font-size:10px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.5px;text-align:center;white-space:nowrap">até segunda, 8h</div>
       <div class="countdown-block"><div class="num" id="cd-dias">--</div><div class="lbl">Dias</div></div>
       <div class="countdown-sep">:</div>
       <div class="countdown-block"><div class="num" id="cd-hrs">--</div><div class="lbl">Horas</div></div>
@@ -2782,9 +2806,9 @@ function renderSecretaria(secId) {
     </div>
 
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',-1)" aria-label="Meses anteriores">‹</button>
+      <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',-1)" aria-label="Meses anteriores" style="font-size:20px;line-height:1">‹</button>
       <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',0)">Hoje</button>
-      <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',1)" aria-label="Próximos meses">›</button>
+      <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',1)" aria-label="Próximos meses" style="font-size:20px;line-height:1">›</button>
     </div>
     <div class="annual-cal-grid" id="cal-grid-${secId}" style="grid-template-columns:1fr 1fr;max-width:680px"></div>
 
@@ -2807,7 +2831,10 @@ function renderSecretaria(secId) {
 
 
 
-window.mudarMesCal = (secId, d) => { window._calOffset = d === 0 ? 0 : (window._calOffset || 0) + d; renderAnnualCalendar(secId); };
+// mês do calendário de cada secretaria (0 = mês atual); no celular mostra 1 mês, no computador 2
+window._calOffset = {};
+const mesesVisiveis = () => innerWidth <= 768 ? 1 : 2;
+window.mudarMesCal = (secId, d) => { window._calOffset[secId] = d === 0 ? 0 : (window._calOffset[secId] || 0) + d; renderAnnualCalendar(secId); };
 function renderAnnualCalendar(secId, year) {
   const grid = document.getElementById(`cal-grid-${secId}`);
   if (!grid) return;
@@ -2816,12 +2843,12 @@ function renderAnnualCalendar(secId, year) {
   const now   = new Date();
 
   // Mês atual + próximo; as setas ‹ › andam de mês em mês (window._calOffset)
-  const base = new Date(now.getFullYear(), now.getMonth() + (window._calOffset || 0), 1);
+  const base = new Date(now.getFullYear(), now.getMonth() + (window._calOffset[secId] || 0), 1);
   const prox = new Date(base.getFullYear(), base.getMonth() + 1, 1);
   const monthsToShow = [
     { year: base.getFullYear(), mi: base.getMonth() },
     { year: prox.getFullYear(), mi: prox.getMonth() },
-  ];
+  ].slice(0, mesesVisiveis());
 
   grid.innerHTML = monthsToShow.map(({ year: yr, mi }) => {
     const monthNum    = mi + 1;
@@ -2860,10 +2887,17 @@ function renderAnnualCalendar(secId, year) {
 
 function selectDay(secId, dateStr, silent) {
   state.selectedDate = dateStr;
+  if (!silent && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    // o calendário vai até o mês do dia escolhido (ex.: pedido criado para outro mês)
+    const now = new Date(), y = +dateStr.slice(0, 4), m = +dateStr.slice(5, 7) - 1;
+    const dif = (y * 12 + m) - (now.getFullYear() * 12 + now.getMonth()), off = window._calOffset[secId] || 0;
+    if (dif < off || dif > off + mesesVisiveis() - 1) window._calOffset[secId] = dif;
+  }
   renderDayPanel(secId, dateStr);
   // Re-render calendar to update selection
   const year = parseInt(dateStr.slice(0,4));
   renderAnnualCalendar(secId, year);
+  if (!silent && innerWidth <= 768) document.getElementById('day-panel-' + secId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderDayPanel(secId, dateStr) {
@@ -2953,11 +2987,11 @@ function openDetailByDate(secId, dateStr, taskId) {
   document.getElementById('modal-title').textContent = task.titulo;
   document.getElementById('modal-badges').innerHTML = `
     <span class="badge ${typeClass}">${esc(task.tipo)}</span>
-    <span class="badge ${prioClass}">${esc((task.prioridade||'media').toUpperCase())}</span>
+    <span class="badge ${prioClass}">${esc(({alta:'ALTA',media:'MÉDIA',baixa:'BAIXA'})[task.prioridade||'media'] || String(task.prioridade).toUpperCase())}</span>
     <span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${statusMap[task.status||'pendente']}</span>`;
   const dateObj2 = isValidDate(dateStr) ? new Date(dateStr + 'T12:00:00') : null;
   const dateFmt2 = dateObj2
-    ? dateObj2.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'})
+    ? dateObj2.toLocaleDateString('pt-BR', dateObj2.getFullYear() === new Date().getFullYear() ? {weekday:'long', day:'2-digit', month:'long'} : {weekday:'long', day:'2-digit', month:'long', year:'numeric'})
     : dateStr;
   document.getElementById('modal-fields').innerHTML = `
     <div class="modal-field"><label>Responsável</label><div class="val">👤 ${esc(task.responsavel||'—')}</div></div>
@@ -2970,7 +3004,12 @@ function openDetailByDate(secId, dateStr, taskId) {
   `;
   document.getElementById('modal-desc-text').textContent = task.desc || 'Sem descrição.';
   const bDone = document.querySelector('#detailModal [onclick="markDone()"]');
-  if (bDone) bDone.textContent = task.status === 'concluido' ? '↺ Reabrir tarefa' : '✓ Marcar concluído';
+  if (bDone) {
+    const reabrir = task.status === 'concluido';
+    bDone.textContent = reabrir ? '↺ Reabrir tarefa' : '✓ Marcar concluído';
+    bDone.className = reabrir ? 'btn btn-ghost' : 'btn btn-success';
+    bDone.style.cssText = reabrir ? 'border-color:var(--gold);color:var(--gold)' : '';
+  }
   document.getElementById('detailModal').classList.add('open');
 }
 
@@ -3152,7 +3191,7 @@ function saveTask() {
     const novo = { ...payload, id: novoId() };
     if (!state._tasks[newKey]) state._tasks[newKey] = [];
     state._tasks[newKey].push(novo);
-    if (window._fbReady && window._db) updateDay(newKey, l => [...l, novo]);
+    if (window._fbReady && window._db) updateDay(newKey, l => l.some(t => t.id == novo.id) ? l : [...l, novo]);
   }
 
   localStorage.setItem('pmTasks', JSON.stringify(state._tasks));
@@ -3331,7 +3370,7 @@ function renderPendentes(filter) {
 
 function updateClock() {
   const now = new Date();
-  document.getElementById('headerDate').textContent =
+  document.getElementById('headerDate').textContent = (innerWidth <= 768 && window._abaNome) ? window._abaNome :
     now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
 
   // Countdown: próxima segunda 08:00
@@ -3451,9 +3490,9 @@ function renderRelatorio() {
         <p class="section-subtitle">${mesLabel} · Gestão 360 Santa Fé · Communication OS</p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button class="btn btn-ghost" onclick="mudarMesRel(-1)" aria-label="Mês anterior">‹</button>
+        <button class="btn btn-ghost" onclick="mudarMesRel(-1)" aria-label="Mês anterior" style="font-size:20px;line-height:1">‹</button>
         <span style="font-size:13px;font-weight:600;color:var(--fg);min-width:130px;text-align:center">${mesLabel}</span>
-        <button class="btn btn-ghost" onclick="mudarMesRel(1)" aria-label="Próximo mês">›</button>
+        <button class="btn btn-ghost" onclick="mudarMesRel(1)" aria-label="Próximo mês" style="font-size:20px;line-height:1">›</button>
         <button class="btn btn-primary" onclick="exportarRelatorioPDF()" style="display:flex;align-items:center;gap:7px">↓ Exportar PDF</button>
       </div>
     </div>
@@ -4299,7 +4338,7 @@ function renderEquipe(filter) {
     const borderStyle = isMe ? `border-color:${m.cor};box-shadow:0 0 0 1px ${m.cor}33` : '';
 
     const taskItems = shown.length === 0
-      ? `<div class="equipe-empty">${filter==='concluidas' ? 'Nenhuma tarefa concluída' : 'Nada ' + ({hoje:'para hoje', semana:'para esta semana', atraso:'em atraso'}[filter] || 'pendente')} 🎉</div>`
+      ? `<div class="equipe-empty">${filter==='concluidas' ? 'Nenhuma tarefa concluída' : 'Nada ' + ({hoje:'para hoje', semana:'para esta semana', atraso:'em atraso'}[filter] || 'pendente')}${pendTotal === 0 ? ' 🎉' : ''}</div>`
       : shown.map(t => {
           const dotColor = { pendente:'var(--fg-3)', em_producao:'var(--purple)', andamento:'var(--gold)', concluido:'var(--green)' }[t.status||'pendente'];
           const dateFmt = t.dateStr ? dataCurta(t.dateStr) : '—';
@@ -4748,7 +4787,7 @@ function renderSocial(subTab) {
             <div class="ctb-bar"><div class="ctb-fill" style="width:13.2%;background:var(--gold)"></div></div>
           </div>
           <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-100)">
-            <div style="font-size:11.5px;color:var(--gray-500)">👥 Seguidores: <strong style="color:var(--fg)">80,9%</strong> das views &nbsp;·&nbsp; Não seguidores: <strong style="color:var(--fg)">19,1%</strong></div>
+            <div style="font-size:11.5px;color:var(--gray-500)">👥 Seguidores: <strong style="color:var(--fg)">80,9%</strong> das visualizações &nbsp;·&nbsp; Não seguidores: <strong style="color:var(--fg)">19,1%</strong></div>
           </div>
         </div>
       </div>
@@ -4821,7 +4860,7 @@ function renderSocial(subTab) {
         </div>
         <div class="insight-card">
           <h4>⚡ Oportunidades de melhoria</h4>
-          <div class="insight-item"><div class="insight-icon">🎬</div><div class="insight-text"><strong>Explore mais Reels</strong> — Reels representam apenas 13,2% das views mas têm alto potencial de alcance orgânico para não-seguidores. Meta: 3-4 Reels/semana.</div></div>
+          <div class="insight-item"><div class="insight-icon">🎬</div><div class="insight-text"><strong>Explore mais Reels</strong> — Reels representam apenas 13,2% das visualizações mas têm alto potencial de alcance orgânico para não-seguidores. Meta: 3-4 Reels/semana.</div></div>
           <div class="insight-item"><div class="insight-icon">👥</div><div class="insight-text"><strong>Alcance de não-seguidores baixo (19,1%)</strong> — Use hashtags estratégicas, CTAs e Reels para alcançar novos públicos.</div></div>
           <div class="insight-item"><div class="insight-icon">🎨</div><div class="insight-text"><strong>Simplificar artes</strong> — Posts com muito texto e informação têm menor engajamento. Arte limpa e objetiva performa melhor.</div></div>
           <div class="insight-item"><div class="insight-icon">📅</div><div class="insight-text"><strong>Consistência</strong> — 146 posts em 30 dias é muito. Qualidade > quantidade. Foque em 4-5 posts/semana com mais produção.</div></div>
@@ -5088,8 +5127,10 @@ function saveMetas() {
                 <div class="form-group"><label>Nome</label><input class="form-control" id="cfg-user-nome" value="${escapeHtml(cfg.user.nome||'')}"></div>
                 <div class="form-group"><label>Cargo/Função</label><input class="form-control" id="cfg-user-cargo" value="${escapeHtml(cfg.user.cargo||'')}"></div>
               </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
               <label class="file-input-label">📷 Alterar foto<input id="cfg-user-foto" type="file" accept="image/*" hidden></label>
-              <button class="btn btn-primary" onclick="saveUserProfile()" style="margin-left:8px">Salvar perfil</button>
+              <button class="btn btn-primary" onclick="saveUserProfile()">Salvar perfil</button>
+              </div>
             </div>
           </div>
         </div>
@@ -5219,6 +5260,9 @@ function saveMetas() {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     if (el) el.classList.add('active');
     _navSwitch(el);
+    // celular: o cabeçalho mostra o nome da tela (sem o número de pendências)
+    if (el) window._abaNome = (el.textContent || '').replace(/^[^A-Za-zÀ-ú]+/, '').replace(/\s*\d+\s*$/, '').trim();
+    if (innerWidth <= 768) { const hd = document.getElementById('headerDate'); if (hd && window._abaNome) hd.textContent = window._abaNome; }
   };
 
 })();

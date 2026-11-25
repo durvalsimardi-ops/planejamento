@@ -20,7 +20,7 @@
     /* ── Typography ── */
     --fg:          rgba(255,255,255,.92);
     --fg-2:        rgba(255,255,255,.55);
-    --fg-3:        rgba(255,255,255,.30);
+    --fg-3:        rgba(255,255,255,.50);
     --fg-4:        rgba(255,255,255,.15);
 
     /* ── Accent colours (iOS system) ── */
@@ -193,7 +193,7 @@
     text-align: center;
     font-size: 14px;
     flex-shrink: 0;
-    opacity: .7;
+    opacity: .9;
   }
   .nav-tab:hover {
     background: var(--glass);
@@ -688,6 +688,7 @@
     max-width: 620px;
     max-height: 90vh;
     overflow-y: auto;
+    display: flex; flex-direction: column;
     box-shadow: 0 32px 80px rgba(0,0,0,.7);
     animation: modalIn .22s cubic-bezier(.16,1,.3,1);
     backdrop-filter: blur(40px);
@@ -723,7 +724,7 @@
     transition: background .15s;
   }
   .modal-close:hover { background: var(--glass-hover); color: var(--fg); }
-  .modal-body { padding: 18px 22px; }
+  .modal-body { padding: 18px 22px; overflow-y: auto; flex: 1 1 auto; }
   .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .modal-field label {
     display: block;
@@ -751,6 +752,7 @@
   }
   .modal-desc p { font-size: 13px; color: var(--fg-2); line-height: 1.6; }
   .modal-footer {
+    position: sticky; bottom: 0; background: rgba(22,22,22,.98); border-top: 1px solid var(--glass-border); flex-shrink: 0;
     padding: 12px 22px 20px;
     display: flex;
     gap: 8px;
@@ -1101,7 +1103,7 @@
     border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(20px);
   }
   .lic-table-header {
-    display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.1fr 124px;
+    display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.1fr) 124px;
     padding: 10px 16px;
     background: rgba(255,255,255,.03);
     border-bottom: 1px solid var(--glass-border);
@@ -1109,7 +1111,7 @@
     letter-spacing: .5px; color: var(--fg-3); gap: 10px;
   }
   .lic-row {
-    display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr 1.1fr 124px;
+    display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.1fr) 124px;
     padding: 13px 16px; border-bottom: 1px solid var(--glass-border);
     gap: 10px; align-items: center; transition: background .15s; cursor: pointer;
   }
@@ -1344,18 +1346,20 @@
     border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(20px);
   }
   .hist-header {
-    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 80px;
+    display: grid; grid-template-columns: 1.1fr repeat(4,minmax(0,1fr)) 72px; gap: 8px;
     padding: 9px 16px; background: rgba(255,255,255,.03);
     border-bottom: 1px solid var(--glass-border);
     font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--fg-3);
   }
   .hist-row {
-    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 80px;
+    display: grid; grid-template-columns: 1.1fr repeat(4,minmax(0,1fr)) 72px; gap: 8px;
     padding: 11px 16px; border-bottom: 1px solid var(--glass-border); align-items: center;
     transition: background .15s;
   }
   .hist-row:last-child { border-bottom: none; }
+  @media (max-width: 600px) { .hist-table { overflow-x: auto; } .hist-header, .hist-row { min-width: 560px; } }
   .hist-row:hover { background: var(--glass); }
+  .scb:not(.atual) { opacity: .55; } .scb.atual { box-shadow: 0 0 0 2px currentColor; }
   .hist-mes   { font-size: 13px; font-weight: 600; color: var(--fg); }
   .hist-val   { font-size: 13px; color: var(--fg-2); }
   .hist-delta { font-size: 11px; font-weight: 600; }
@@ -1712,6 +1716,20 @@
     .countdown { display: none; }
   }
 
+  @media (max-width: 1180px) { .home-hero-inner { grid-template-columns: 1fr !important; } }
+  @media (max-width: 768px) {
+    /* toques de pelo menos 44 px */
+    .week-btn, .lic-filter-btn, .social-tab, .hist-action-btn, .lic-action-btn, .btn { min-height: 44px; min-width: 44px; }
+    .alert-close-btn, .modal-close, .mob-menu-btn { width: 44px !important; height: 44px !important; }
+    .dp-task button { min-width: 40px; min-height: 40px; }
+    /* calendário: um mês por linha, dias maiores */
+    .annual-cal-grid { grid-template-columns: 1fr !important; max-width: none !important; }
+    .mini-day { font-size: 14px; min-height: 40px; }
+    /* licitação no celular: data aparece embaixo do título */
+    .lic-row > *:nth-child(3) { display: block !important; grid-column: 1 / -1; }
+    .sidebar-brand { padding-left: 64px; }
+    .user-row { flex-wrap: wrap; gap: 8px; }
+  }
   @media (max-width: 760px) {
     .rsp-1 { grid-template-columns: 1fr !important; }
     .rsp-2 { grid-template-columns: 1fr 1fr !important; }
@@ -1733,6 +1751,7 @@
   }
 
   /* Old OS vars patch */
+  :root {
   --os-blue: var(--blue);
   --os-text: var(--fg);
   --os-muted: var(--fg-2);
@@ -1742,6 +1761,7 @@
   --os-radius: var(--radius);
   --os-shadow: var(--shadow);
   --blue-glow: var(--blue-light);
+  }
 
 </style>
 <script>
@@ -1749,6 +1769,8 @@
 // Escapa texto antes de ir para o innerHTML (um título digitado não roda código no navegador dos outros).
 window.esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Hoje no fuso do computador (toISOString usava UTC e virava o dia às 21h).
+// "06/07" no ano atual; "01/04/2099" em outro ano
+window.dataCurta = ds => { const d = new Date(ds + 'T12:00'); return d.toLocaleDateString('pt-BR', d.getFullYear() === new Date().getFullYear() ? { day:'2-digit', month:'2-digit' } : { day:'2-digit', month:'2-digit', year:'numeric' }); };
 window.ymdLocal = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 // Erro de gravação aparece para quem salvou, em vez de sumir no console.
 window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.updateSyncIndicator(false); alert('Não salvou no servidor: ' + (e && e.message || e)); };
@@ -1779,6 +1801,28 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
   // Sem internet a transação não roda: grava com set (fica na fila do Firebase e sobe quando a conexão volta).
   // Outro erro (ex.: regra negando): avisa e volta a tela para o que está no servidor.
   const semRede = e => !navigator.onLine || (e && (e.code === 'unavailable' || e.code === 'deadline-exceeded'));
+  const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const FV = () => firebase.firestore.FieldValue;
+  const copia = x => JSON.parse(JSON.stringify(x ?? null));
+  // Lista de pedidos: tira o que saiu e acrescenta o que entrou, item a item.
+  const gravarDiferencaLista = (ref, antes, depois) => {
+    const tirar = antes.filter(a => !depois.some(b => igual(a, b)));
+    const por = depois.filter(b => !antes.some(a => igual(a, b)));
+    if (tirar.length) ref.set({ list: FV().arrayRemove(...tirar) }, { merge: true });
+    if (por.length) ref.set({ list: FV().arrayUnion(...por) }, { merge: true });
+  };
+  // Documento de config: listas item a item, demais campos só se mudaram.
+  const gravarDiferencaDoc = (ref, antes, depois) => {
+    Object.keys({ ...antes, ...depois }).forEach(k => {
+      const a = antes[k], b = depois[k];
+      if (igual(a, b)) return;
+      if (Array.isArray(a) && Array.isArray(b)) gravarDiferencaLista({ set: (o, m) => ref.set({ [k]: o.list }, m) }, a, b);
+      else ref.set({ [k]: b === undefined ? FV().delete() : b }, { merge: true });
+    });
+  };
+  // id = milissegundo × 1000 + contador desta aba (começa num ponto aleatório): nunca repete na mesma aba e quase nunca entre pessoas
+  let _seqId = Math.floor(Math.random() * 1000), _ultMs = 0;
+  window.novoId = () => { const ms = Date.now(); if (ms !== _ultMs) { _ultMs = ms; } _seqId = (_seqId + 1) % 1000; return ms * 1000 + _seqId; };
   const desfaz = keys => { if (!window.state) return; keys.forEach(k => { window.state._tasks[k] = JSON.parse(JSON.stringify((window._srvTasks || {})[k] || [])); }); window._rerenderTasks && window._rerenderTasks(); };
   window.updateDay = (key, fn) => {
     const ref = db.collection('tasks').doc(key);
@@ -1788,7 +1832,7 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
       tx.set(ref, { list });
       return list;
     }).catch(e => {
-      if (semRede(e)) { ref.set({ list: fn((window._srvTasks || {})[key] || []) }); alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return; }
+      if (semRede(e)) { const antes = copia((window._srvTasks || {})[key] || []); gravarDiferencaLista(ref, antes, fn(copia(antes))); alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return; }
       desfaz([key]); window.fbErro(e);
     });
   };
@@ -1803,11 +1847,10 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
       tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
     }).catch(e => {
       if (semRede(e)) {
-        const srv = window._srvTasks || {}, batch = db.batch();
-        const old = (srv[oldKey] || []).filter(t => t.id != id);
-        if (oldKey === newKey) batch.set(refOld, { list: [...old, upd] });
-        else { batch.set(refOld, { list: old }); batch.set(refNew, { list: [...(srv[newKey] || []).filter(t => t.id != id), upd] }); }
-        batch.commit(); alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return;
+        const srv = window._srvTasks || {}, a = copia(srv[oldKey] || []), b = copia(srv[newKey] || []);
+        if (oldKey === newKey) gravarDiferencaLista(refOld, a, [...a.filter(t => t.id != id), upd]);
+        else { gravarDiferencaLista(refOld, a, a.filter(t => t.id != id)); gravarDiferencaLista(refNew, b, [...b.filter(t => t.id != id), upd]); }
+        alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return;
       }
       desfaz([oldKey, newKey]); window.fbErro(e);
     });
@@ -1822,19 +1865,51 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
       const d = s.exists ? s.data() : JSON.parse(JSON.stringify(base || {}));
       fn(d); tx.set(ref, d);
     }).catch(e => {
-      if (semRede(e)) { const d = JSON.parse(JSON.stringify(base || {})); fn(d); ref.set(d); return; }
+      if (semRede(e)) { const antes = copia((window._srvConfig || {})[docId] || base || {}); const d = copia(antes); fn(d); gravarDiferencaDoc(ref, antes, d); return; }
       window.fbErro(e);
     });
   };
 
+  window.editarTask = (oldKey, newKey, id, mudou) => {
+    const refOld = db.collection('tasks').doc(oldKey), refNew = db.collection('tasks').doc(newKey);
+    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
+      const a = await tx.get(refOld), b = oldKey === newKey ? a : await tx.get(refNew);
+      const la = (a.exists && a.data().list) || [];
+      const cur = la.find(t => t.id == id);
+      if (!cur) throw { code: 'sumiu' };
+      const upd = { ...cur, ...mudou };
+      if (oldKey === newKey) { tx.set(refOld, { list: la.map(t => t.id == id ? upd : t) }); return; }
+      tx.set(refOld, { list: la.filter(t => t.id != id) });
+      tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
+    }).catch(e => {
+      if (e && e.code === 'sumiu') { desfaz([oldKey, newKey]); alert('Esse pedido foi excluído por outra pessoa enquanto você editava. Nada foi salvo.'); return; }
+      if (semRede(e)) {
+        const srv = window._srvTasks || {}, a = copia(srv[oldKey] || []), b = copia(srv[newKey] || []);
+        const cur = a.find(t => t.id == id); if (!cur) return;
+        const upd = { ...cur, ...mudou };
+        if (oldKey === newKey) gravarDiferencaLista(refOld, a, a.map(t => t.id == id ? upd : t));
+        else { gravarDiferencaLista(refOld, a, a.filter(t => t.id != id)); gravarDiferencaLista(refNew, b, [...b.filter(t => t.id != id), upd]); }
+        alert('Sem internet: ficou salvo neste aparelho e sobe sozinho quando a conexão voltar. Não feche o navegador até lá.'); return;
+      }
+      desfaz([oldKey, newKey]); window.fbErro(e);
+    });
+  };
+
   // Mídias Sociais e Configurações: recebe o que os outros salvaram (antes só lia o localStorage deste navegador).
+  window._srvConfig = {};
+  // Sincronizado = dados vindos do servidor; Offline = só a cópia local
+  db.collection('config').doc('os').onSnapshot({ includeMetadataChanges: true }, s => window.updateSyncIndicator && window.updateSyncIndicator(!s.metadata.fromCache), () => window.updateSyncIndicator && window.updateSyncIndicator(false));
   db.collection('config').doc('social').onSnapshot(s => {
     if (!s.exists) return;
+    window._srvConfig.social = s.data();
     try { localStorage.setItem('pmSocial', JSON.stringify(s.data())); } catch (e) {}
-    if (document.querySelector('[data-tab="social"].active')) window.renderSocial && window.renderSocial();
+    // não redesenha com alguém digitando (metas, mês) nem com janela aberta
+    const digitando = document.activeElement && document.getElementById('page-social')?.contains(document.activeElement);
+    if (document.querySelector('[data-tab="social"].active') && !digitando && !document.querySelector('.modal-overlay.open')) window.renderSocial && window.renderSocial(window._socialTab);
   }, e => console.error('config/social', e));
   db.collection('config').doc('os').onSnapshot(s => {
     if (!s.exists) return;
+    window._srvConfig.os = s.data();
     try { localStorage.setItem('pmOsConfig', JSON.stringify(s.data())); } catch (e) {}
     window.applyHeaderUser && window.applyHeaderUser();
     if (document.querySelector('[data-tab="configuracoes"].active')) window.renderConfiguracoes && window.renderConfiguracoes();
@@ -1869,7 +1944,8 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
         const tabId = activeTab.dataset.tab;
         if      (tabId === 'visao-geral')  window.renderOverview  && window.renderOverview();
         else if (tabId === 'licitacoes')   {}
-        else if (tabId === 'pendentes')    window.renderPendentes && window.renderPendentes();
+        else if (tabId === 'pendentes')    window._pendMembro ? window.renderPendentesMembro(window._pendMembro) : window.renderPendentes(window._pendFilter);
+        else if (tabId === 'relatorio')    window.renderRelatorio && window.renderRelatorio();
         else if (tabId === 'equipe')       window.renderEquipe    && window.renderEquipe();
         else {
           const secIds = ['comunicacao','educacao','saude','obras','agricultura','familia','assistencia','desenvolvimento','fazenda','gabinete'];
@@ -1929,7 +2005,7 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
     <!-- preenchido por JS -->
   </div>
 
-  <p style="margin-top:36px;font-size:12px;color:rgba(255,255,255,.2);font-family:-apple-system,sans-serif">Seu perfil será lembrado neste dispositivo</p>
+  <p style="margin-top:36px;font-size:12px;color:rgba(255,255,255,.5);font-family:-apple-system,sans-serif">Seu perfil será lembrado neste dispositivo</p>
 </div>
 
 <!-- Mobile overlay -->
@@ -2032,10 +2108,10 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
     <div class="today-badge">
       <span id="headerDate" style="color:rgba(255,255,255,.4);font-size:12px"></span>
     </div>
-    <div class="countdown" title="Tempo até segunda-feira, 8h" id="countdown">
+    <div class="countdown" title="Tempo até segunda-feira, 8h" id="countdown" aria-label="Tempo até segunda-feira, 8h"><div class="countdown-block" style="font-size:9px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.5px;line-height:1.2;text-align:right;margin-right:4px">até<br>seg. 8h</div>
       <div class="countdown-block"><div class="num" id="cd-dias">--</div><div class="lbl">Dias</div></div>
       <div class="countdown-sep">:</div>
-      <div class="countdown-block"><div class="num" id="cd-hrs">--</div><div class="lbl">Hrs</div></div>
+      <div class="countdown-block"><div class="num" id="cd-hrs">--</div><div class="lbl">Horas</div></div>
       <div class="countdown-sep">:</div>
       <div class="countdown-block"><div class="num" id="cd-min">--</div><div class="lbl">Min</div></div>
       <div class="countdown-sep">:</div>
@@ -2055,7 +2131,7 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
         <h1 class="hero-title">Comunicação pública.<br><strong>Em modo estratégico.</strong></h1>
         <p class="hero-subtitle">Uma central limpa, rápida e executiva para transformar dados da gestão em narrativa, prioridade e ação pública.</p>
         <div class="hero-actions">
-          <button class="hero-btn primary" onclick="document.getElementById('overviewGrid').scrollIntoView({behavior:'smooth'})">Entrar no sistema →</button>
+          <button class="hero-btn primary" onclick="document.getElementById('overviewGrid').scrollIntoView({behavior:'smooth'})">Ver secretarias ↓</button>
           <button class="hero-btn secondary" onclick="switchTab(document.querySelector('[data-tab=pendentes]'))">Ver pendências</button>
         </div>
       </div>
@@ -2285,7 +2361,7 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>Nova Tarefa</h2>
+      <h2 id="add-modal-title">Nova Tarefa</h2>
       <button class="modal-close" onclick="closeModal('addModal')">✕</button>
     </div>
     <div class="modal-body">
@@ -2399,6 +2475,7 @@ function setActiveUser(nome) {
   localStorage.setItem('pmActiveUser', JSON.stringify({ nome: m.nome, cor: m.cor, bg: m.bg, inicial: m.inicial }));
   updateSidebarUserFromMembro();
   hidePerfitSelect();
+  window.applyHeaderUser && window.applyHeaderUser();
 }
 function updateSidebarUserFromMembro() {
   const u = getActiveUser();
@@ -2443,16 +2520,16 @@ window.setActiveUser = setActiveUser;
 window.showProfileSelect = showProfileSelect;
 
 const SECRETARIAS = [
-  { id: 'comunicacao', nome: 'Comunicação',         icon: '📢', color: '#1a56db', bg: '#dbeafe', semanas: 8 },
-  { id: 'educacao',    nome: 'Educação',             icon: '📚', color: '#7c3aed', bg: '#ede9fe', semanas: 8 },
-  { id: 'saude',       nome: 'Saúde',                icon: '🏥', color: '#059669', bg: '#d1fae5', semanas: 8 },
-  { id: 'obras',       nome: 'Obras / Infraestrutura', icon: '🏗️', color: '#ea580c', bg: '#ffedd5', semanas: 8 },
-  { id: 'agricultura',          nome: 'Agricultura',               icon: '🌱', color: '#0d9488', bg: '#ccfbf1', semanas: 8 },
-  { id: 'familia',              nome: 'Família',                   icon: '👨‍👩‍👧', color: '#db2777', bg: '#fce7f3', semanas: 8 },
-  { id: 'assistencia',          nome: 'Assistência Social',        icon: '🤝', color: '#9333ea', bg: '#f3e8ff', semanas: 8 },
-  { id: 'desenvolvimento',      nome: 'Desenvolvimento Econômico', icon: '📈', color: '#0369a1', bg: '#e0f2fe', semanas: 8 },
-  { id: 'fazenda',              nome: 'Fazenda',                   icon: '💰', color: '#b45309', bg: '#fef3c7', semanas: 8 },
-  { id: 'gabinete',             nome: 'Gabinete',                  icon: '🏛️', color: '#9ca3af', bg: '#f3f4f6', semanas: 8 },
+  { id: 'comunicacao', nome: 'Comunicação',         icon: '📢', color: '#4D8DFF', bg: '#4D8DFF26', semanas: 8 },
+  { id: 'educacao',    nome: 'Educação',             icon: '📚', color: '#A78BFA', bg: '#A78BFA26', semanas: 8 },
+  { id: 'saude',       nome: 'Saúde',                icon: '🏥', color: '#34D399', bg: '#34D39926', semanas: 8 },
+  { id: 'obras',       nome: 'Obras / Infraestrutura', icon: '🏗️', color: '#FB923C', bg: '#FB923C26', semanas: 8 },
+  { id: 'agricultura',          nome: 'Agricultura',               icon: '🌱', color: '#2DD4BF', bg: '#2DD4BF26', semanas: 8 },
+  { id: 'familia',              nome: 'Família',                   icon: '👨‍👩‍👧', color: '#F472B6', bg: '#F472B626', semanas: 8 },
+  { id: 'assistencia',          nome: 'Assistência Social',        icon: '🤝', color: '#E879F9', bg: '#E879F926', semanas: 8 },
+  { id: 'desenvolvimento',      nome: 'Desenvolvimento Econômico', icon: '📈', color: '#38BDF8', bg: '#38BDF826', semanas: 8 },
+  { id: 'fazenda',              nome: 'Fazenda',                   icon: '💰', color: '#FBBF24', bg: '#FBBF2426', semanas: 8 },
+  { id: 'gabinete',             nome: 'Gabinete',                  icon: '🏛️', color: '#9CA3AF', bg: '#9CA3AF26', semanas: 8 },
 ];
 
 const DIAS = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
@@ -2609,7 +2686,7 @@ function renderOverview() {
         <div class="ov-total">${total} tarefas · ${year}</div>
       </div>
       <div class="ov-name">${s.nome}</div>
-      <div class="ov-sub">${todayCount} hoje · ${alta > 0 ? `<span style="color:var(--red)">${alta} prioridades críticas</span>` : 'sem urgências'}</div>
+      <div class="ov-sub">${todayCount} hoje · ${alta > 0 ? `<span style="color:var(--red)">${alta} ${alta === 1 ? 'prioridade crítica' : 'prioridades críticas'}</span>` : 'sem urgências'}</div>
       <div class="ov-bar"><div class="ov-bar-fill" style="background:${s.color};width:${pct}%"></div></div>
       <div class="ov-pct" style="color:${s.color}">${pct}% concluído</div>
     </div>`;
@@ -2632,8 +2709,8 @@ function renderOverview() {
   const decisionGrid = document.getElementById('decisionGrid');
   if (decisionGrid) {
     decisionGrid.innerHTML = `
-      <div class="decision-card" style="--accent:var(--red)"><div class="decision-icon">🚨</div><div><div class="decision-title">${totalAlta || 'Nenhuma'} prioridade alta ${totalAlta === 1 ? 'precisa' : 'precisam'} de atenção</div><div class="decision-sub">atenção imediata</div></div></div>
-      <div class="decision-card" style="--accent:var(--gold-bright)"><div class="decision-icon">⚠️</div><div><div class="decision-title">${totalPendentes} sinais pendentes abertas na gestão</div><div class="decision-sub">revisar responsáveis</div></div></div>
+      <div class="decision-card" style="--accent:var(--red)"><div class="decision-icon">🚨</div><div><div class="decision-title">${totalAlta ? totalAlta + (totalAlta === 1 ? ' tarefa de prioridade alta precisa' : ' tarefas de prioridade alta precisam') : 'Nenhuma tarefa de prioridade alta precisa'} de atenção</div><div class="decision-sub">atenção imediata</div></div></div>
+      <div class="decision-card" style="--accent:var(--gold-bright)"><div class="decision-icon">⚠️</div><div><div class="decision-title">${totalPendentes} ${totalPendentes === 1 ? 'pendência aberta' : 'pendências abertas'} na gestão</div><div class="decision-sub">revisar responsáveis</div></div></div>
       <div class="decision-card" style="--accent:var(--blue)"><div class="decision-icon">📊</div><div><div class="decision-title">Execução geral em ${execucaoGeral}%</div><div class="decision-sub">acompanhar desempenho</div></div></div>
     `;
   }
@@ -2677,7 +2754,7 @@ function renderSecretaria(secId) {
     : pendentes.slice(0, 8).map(t => {
         const isLate = t.dateStr < today;
         const dateFmt = t.dateStr === today ? 'Hoje'
-          : new Date(t.dateStr + 'T12:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
+          : dataCurta(t.dateStr);
         const sc = statusColors[t.status || 'pendente'];
         return `<div style="display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--glass-border);cursor:pointer"
           onclick="selectDay('${secId}','${t.dateStr}')">
@@ -2704,6 +2781,13 @@ function renderSecretaria(secId) {
       <button class="btn btn-primary" onclick="openAddModal('${secId}', '${today}')">+ Nova Tarefa</button>
     </div>
 
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',-1)" aria-label="Meses anteriores">‹</button>
+      <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',0)">Hoje</button>
+      <button class="btn btn-ghost" onclick="mudarMesCal('${secId}',1)" aria-label="Próximos meses">›</button>
+    </div>
+    <div class="annual-cal-grid" id="cal-grid-${secId}" style="grid-template-columns:1fr 1fr;max-width:680px"></div>
+
     <!-- Pendentes desta secretaria -->
     <div class="rsp-1" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
       <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:var(--radius);padding:16px 18px;backdrop-filter:blur(20px)">
@@ -2715,8 +2799,6 @@ function renderSecretaria(secId) {
       </div>
       <div id="day-panel-${secId}"></div>
     </div>
-
-    <div class="annual-cal-grid" id="cal-grid-${secId}" style="grid-template-columns:1fr 1fr;max-width:680px"></div>
   `;
 
   renderAnnualCalendar(secId, calYear);
@@ -2725,6 +2807,7 @@ function renderSecretaria(secId) {
 
 
 
+window.mudarMesCal = (secId, d) => { window._calOffset = d === 0 ? 0 : (window._calOffset || 0) + d; renderAnnualCalendar(secId); };
 function renderAnnualCalendar(secId, year) {
   const grid = document.getElementById(`cal-grid-${secId}`);
   if (!grid) return;
@@ -2732,15 +2815,12 @@ function renderAnnualCalendar(secId, year) {
   const sel   = state.selectedDate;
   const now   = new Date();
 
-  // Mostrar apenas: mês anterior + mês atual
-  const currentMonth = now.getMonth();     // 0-indexed
-  const currentYear  = now.getFullYear();
-  const prevMonth    = currentMonth === 0 ? 11 : currentMonth - 1;
-  const prevYear     = currentMonth === 0 ? currentYear - 1 : currentYear;
-
+  // Mês atual + próximo; as setas ‹ › andam de mês em mês (window._calOffset)
+  const base = new Date(now.getFullYear(), now.getMonth() + (window._calOffset || 0), 1);
+  const prox = new Date(base.getFullYear(), base.getMonth() + 1, 1);
   const monthsToShow = [
-    { year: prevYear,     mi: prevMonth     },
-    { year: currentYear,  mi: currentMonth  },
+    { year: base.getFullYear(), mi: base.getMonth() },
+    { year: prox.getFullYear(), mi: prox.getMonth() },
   ];
 
   grid.innerHTML = monthsToShow.map(({ year: yr, mi }) => {
@@ -2873,7 +2953,7 @@ function openDetailByDate(secId, dateStr, taskId) {
   document.getElementById('modal-title').textContent = task.titulo;
   document.getElementById('modal-badges').innerHTML = `
     <span class="badge ${typeClass}">${esc(task.tipo)}</span>
-    <span class="badge ${prioClass}">${(task.prioridade||'media').toUpperCase()}</span>
+    <span class="badge ${prioClass}">${esc((task.prioridade||'media').toUpperCase())}</span>
     <span class="badge" style="background:var(--gray-100);color:var(--gray-600)">${statusMap[task.status||'pendente']}</span>`;
   const dateObj2 = isValidDate(dateStr) ? new Date(dateStr + 'T12:00:00') : null;
   const dateFmt2 = dateObj2
@@ -2889,6 +2969,8 @@ function openDetailByDate(secId, dateStr, taskId) {
     ${task.hashtags ? `<div class="modal-field" style="grid-column:1/-1"><label>Pauta / Hashtags</label><div class="val" style="color:var(--blue)">${esc(task.hashtags)}</div></div>` : ''}
   `;
   document.getElementById('modal-desc-text').textContent = task.desc || 'Sem descrição.';
+  const bDone = document.querySelector('#detailModal [onclick="markDone()"]');
+  if (bDone) bDone.textContent = task.status === 'concluido' ? '↺ Reabrir tarefa' : '✓ Marcar concluído';
   document.getElementById('detailModal').classList.add('open');
 }
 
@@ -2906,6 +2988,8 @@ function openEditTaskByDate(secId, dateStr, taskId) {
   if (!task) return;
   state.addTarget = { secId, dateStr };
   state.editingTaskId = taskId;
+  state.editingOriginal = JSON.parse(JSON.stringify(task)); // para gravar só o que a pessoa mudou
+  const secE = SECRETARIAS.find(x => x.id === secId); document.getElementById('add-modal-title').textContent = 'Editar tarefa' + (secE ? ' · ' + secE.nome : '');
   document.getElementById('f-titulo').value     = task.titulo || '';
   document.getElementById('f-tipo').value       = task.tipo || 'Post';
   document.getElementById('f-canal').value      = task.canal || 'Instagram';
@@ -3001,8 +3085,11 @@ function markDone() {
 
 function openAddModal(secId, dateStr) {
   state.addTarget = { secId, dateStr: dateStr || todayStr() };
-  state.editingTaskId = null;
+  state.editingTaskId = null; state.editingOriginal = null;
+  const secT = SECRETARIAS.find(x => x.id === secId); document.getElementById('add-modal-title').textContent = 'Nova tarefa' + (secT ? ' · ' + secT.nome : '');
   ['f-titulo','f-hashtags','f-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-tipo').value = 'Post'; document.getElementById('f-canal').value = 'Instagram';
+  document.getElementById('f-prioridade').value = 'media'; document.getElementById('f-aprovacao').value = 'Pendente';
   document.getElementById('f-horario').value = '09:00';
   document.getElementById('f-data-prazo').value = dateStr || todayStr();
   document.getElementById('f-status').value = 'pendente';
@@ -3046,21 +3133,23 @@ function saveTask() {
         if ((state._tasks[k] || []).find(t => t.id == editId)) oldKey = k;
       }
     });
+    if (!oldKey) { alert('Esse pedido foi excluído por outra pessoa enquanto você editava. Nada foi salvo.'); state.editingTaskId = null; state.editingOriginal = null; document.getElementById('addModal').classList.remove('open'); return; }
     // mantém os campos que o formulário não tem (quem criou, foto etc.)
     const antigo = oldKey ? ((state._tasks[oldKey] || []).find(t => t.id == editId) || {}) : {};
-    const upd = { ...antigo, ...payload, id: editId };
+    // só os campos que a pessoa mudou no formulário (não desfaz o que outro salvou enquanto ela editava)
+    const orig = state.editingOriginal || antigo;
+    const mudou = {}; Object.keys(payload).forEach(f => { if ((payload[f] ?? '') !== (orig[f] ?? '')) mudou[f] = payload[f]; });
+    const upd = { ...antigo, ...mudou, id: editId };
     if (oldKey) state._tasks[oldKey] = state._tasks[oldKey].filter(t => t.id != editId);
     // Place at new key (new date)
     const newKey = taskKey(secId, dataPrazo);
     if (!state._tasks[newKey]) state._tasks[newKey] = [];
     state._tasks[newKey].push(upd);
-    if (window._fbReady && window._db) {
-      if (oldKey) moveTask(oldKey, newKey, editId, upd);
-      else updateDay(newKey, l => [...l.filter(t => t.id != editId), upd]);
-    }
+    if (window._fbReady && window._db && oldKey) editarTask(oldKey, newKey, editId, mudou);
+    state.editingOriginal = null;
   } else {
     const newKey = taskKey(secId, dataPrazo);
-    const novo = { ...payload, id: Date.now() };
+    const novo = { ...payload, id: novoId() };
     if (!state._tasks[newKey]) state._tasks[newKey] = [];
     state._tasks[newKey].push(novo);
     if (window._fbReady && window._db) updateDay(newKey, l => [...l, novo]);
@@ -3148,7 +3237,8 @@ function editFromDetail() {
 // ═══════════════════════════════════════════════
 
 function renderPendentes(filter) {
-  filter = filter || 'todas';
+  filter = filter || window._pendFilter || 'todas';
+  window._pendFilter = filter; window._pendMembro = null;
   const page = document.getElementById('page-pendentes');
   const today = todayStr();
   const statusColors = { pendente:'#94a3b8', em_producao:'#7c3aed', andamento:'#f59e0b', concluido:'#059669' };
@@ -3185,7 +3275,7 @@ function renderPendentes(filter) {
       const sl = statusLabels[t.status||'pendente'];
       const isLate = t.dateStr < today;
       const dateLabel = t.dateStr
-        ? (t.dateStr === today ? 'Hoje' : new Date(t.dateStr+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}))
+        ? (t.dateStr === today ? 'Hoje' : dataCurta(t.dateStr))
         : '—';
       return `<div class="pend-item">
         <div class="pend-dot" style="background:${isLate?'#dc2626':sc}"></div>
@@ -3204,7 +3294,7 @@ function renderPendentes(filter) {
 
     const cardColor = s.color;
     return `<div class="pend-sec-card">
-      <div class="pend-sec-header" style="background:${s.bg}20">
+      <div class="pend-sec-header" style="background:${s.color}1f">
         <div class="pend-sec-name" style="color:${cardColor}">${s.icon} ${s.nome}</div>
         <span class="pend-count" style="background:${cardColor}22;color:${cardColor}">${allPend.length} pendente${allPend.length!==1?'s':''}</span>
       </div>
@@ -3245,9 +3335,10 @@ function updateClock() {
     now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
 
   // Countdown: próxima segunda 08:00
-  const target = new Date();
-  target.setDate(target.getDate() + ((1 + 7 - target.getDay()) % 7 || 7));
+  const target = new Date(now);
+  target.setDate(target.getDate() + ((1 + 7 - target.getDay()) % 7));
   target.setHours(8, 0, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 7);
   const diff = target - now;
   const days = Math.floor(diff / 86400000);
   const hrs  = Math.floor((diff % 86400000) / 3600000);
@@ -3267,10 +3358,13 @@ function updateClock() {
 //  RELATÓRIO
 // ═══════════════════════════════════════════════
 
+// mês escolhido no relatório (‹ ›): 0 = mês atual
+function mesRelatorio() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + (window._relOffset || 0), 15); }
+window.mudarMesRel = d => { window._relOffset = (window._relOffset || 0) + d; renderRelatorio(); };
 function renderRelatorio() {
   const page  = document.getElementById('page-relatorio');
   const today = todayStr();
-  const now   = new Date();
+  const now   = mesRelatorio();
   const mesAtual = now.getMonth();
   const anoAtual = now.getFullYear();
   const mesStr   = `${anoAtual}-${String(mesAtual + 1).padStart(2,'0')}`;
@@ -3314,7 +3408,7 @@ function renderRelatorio() {
 
   // Top tipos
   const tipoMap = {};
-  doMes.forEach(t => { tipoMap[t.tipo || 'Outro'] = (tipoMap[t.tipo || 'Outro'] || 0) + 1; });
+  doMes.forEach(t => { const k = esc(t.tipo || 'Outro'); tipoMap[k] = (tipoMap[k] || 0) + 1; });
   const topTipos = Object.entries(tipoMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const maxTipo  = topTipos[0]?.[1] || 1;
   const tipoColors = ['var(--blue)','var(--purple)','var(--green)','var(--gold)','var(--teal)','var(--red)'];
@@ -3356,9 +3450,12 @@ function renderRelatorio() {
         <h2 class="section-title">Relatório de Tarefas</h2>
         <p class="section-subtitle">${mesLabel} · Gestão 360 Santa Fé · Communication OS</p>
       </div>
-      <button class="btn btn-primary" onclick="exportarRelatorioPDF()" style="display:flex;align-items:center;gap:7px">
-        ↓ Exportar PDF
-      </button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="mudarMesRel(-1)" aria-label="Mês anterior">‹</button>
+        <span style="font-size:13px;font-weight:600;color:var(--fg);min-width:130px;text-align:center">${mesLabel}</span>
+        <button class="btn btn-ghost" onclick="mudarMesRel(1)" aria-label="Próximo mês">›</button>
+        <button class="btn btn-primary" onclick="exportarRelatorioPDF()" style="display:flex;align-items:center;gap:7px">↓ Exportar PDF</button>
+      </div>
     </div>
 
     <!-- KPIs -->
@@ -3369,7 +3466,7 @@ function renderRelatorio() {
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--fg-3);margin-bottom:6px">${k.label}</div>
           <div style="font-size:38px;font-weight:700;color:var(--fg);letter-spacing:-2px;line-height:1;margin-bottom:3px">${k.val}</div>
           <div style="font-size:11px;color:var(--fg-3)">${k.sub}</div>
-          <div style="position:absolute;top:14px;right:16px;font-size:22px;opacity:.08">${k.icon}</div>
+          <div style="position:absolute;top:14px;right:16px;font-size:20px;opacity:.35">${k.icon}</div>
         </div>`).join('')}
     </div>
 
@@ -3431,7 +3528,7 @@ function renderRelatorio() {
     </div>
 
     <!-- Ranking + Acumulado -->
-    <div class="rsp-1" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div class="rsp-1" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;align-items:start">
       <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;backdrop-filter:blur(20px)">
         <div style="font-size:13px;font-weight:700;color:var(--fg);margin-bottom:16px">Ranking da Equipe</div>
         ${ranking.length === 0
@@ -3488,7 +3585,7 @@ function renderRelatorio() {
 }
 
 function exportarRelatorioPDF() {
-  const now     = new Date();
+  const now     = mesRelatorio();
   const mesNome = now.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
   const mesLabel = mesNome.charAt(0).toUpperCase() + mesNome.slice(1);
 
@@ -3519,7 +3616,7 @@ function exportarRelatorioPDF() {
   }).filter(s => s.total > 0).sort((a,b) => b.pct - a.pct);
 
   const tipoMap = {};
-  doMes.forEach(t => { tipoMap[t.tipo||'Outro'] = (tipoMap[t.tipo||'Outro']||0)+1; });
+  doMes.forEach(t => { const k = esc(t.tipo||'Outro'); tipoMap[k] = (tipoMap[k]||0)+1; });
   const topTipos = Object.entries(tipoMap).sort((a,b) => b[1]-a[1]).slice(0,6);
 
   const membroMap = {};
@@ -3743,6 +3840,15 @@ function fmtDate(str) {
 function isValidDate(str) {
   return str && /^\d{4}-\d{2}-\d{2}$/.test(str);
 }
+// "1.500" = mil e quinhentos; "1.234,56" e "2500.50" também entendidos.
+function parseValorBR(txt) {
+  let v = String(txt || '').replace(/R\$|\s/g, '');
+  if (v.includes(',')) v = v.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g, '');
+  else v = v.replace(/[^0-9.]/g, '');
+  return parseFloat(v) || 0;
+}
+
 function dateClass(str) {
   if (!str) return '';
   const today = new Date(); today.setHours(0,0,0,0);
@@ -3754,7 +3860,8 @@ function dateClass(str) {
   return 'future';
 }
 
-function renderLicitacoes(filter = 'todos') {
+function renderLicitacoes(filter) {
+  filter = filter || window._licFilter || 'todos';
   window._licFilter = filter;
   const page = document.getElementById('page-licitacoes');
   const lics = getLics();
@@ -3806,7 +3913,7 @@ function renderLicitacoes(filter = 'todos') {
       </div>
       <div style="display:flex;gap:8px">
         <!-- "Importar com IA" escondido em 24/11/2026: chamava a API da Anthropic direto do navegador, sem chave, e sempre dava erro -->
-        <button class="btn btn-primary" onclick="openAddLic()">+ Manual</button>
+        <button class="btn btn-primary" onclick="openAddLic()" style="white-space:nowrap">+ Nova licitação</button>
       </div>
     </div>
     <div class="lic-stats">
@@ -3858,7 +3965,7 @@ function openLicDetail(id) {
 
   document.getElementById('lic-status-btns').innerHTML =
     ['agendada','aguardando','concluida'].map(s =>
-      `<button class="scb ${s} ${l.status===s?'':'opacity:.6'}" onclick="changeLicStatus(${id},'${s}')">${statusLabel(s)}</button>`
+      `<button class="scb ${s} ${l.status===s?'atual':''}" onclick="changeLicStatus(${id},'${s}')">${statusLabel(s)}</button>`
     ).join('');
 
   document.getElementById('licModal').classList.add('open');
@@ -3890,6 +3997,7 @@ function openEditLic(id) {
   const lics = getLics();
   const l = lics.find(x => x.id == id);
   if (!l) return;
+  window._licOriginal = JSON.parse(JSON.stringify(l));
   document.getElementById('lf-edit-id').value = id;
   document.getElementById('lf-nome').value    = l.nome || '';
   document.getElementById('lf-data').value    = l.data || '';
@@ -3941,13 +4049,7 @@ function saveLic() {
   const nome = document.getElementById('lf-nome').value.trim();
   const data = document.getElementById('lf-data').value;
   // Handle Brazilian format: "3.094.631,60" → 3094631.60
-  let valorStr = document.getElementById('lf-valor').value.trim();
-  if (valorStr.includes(',')) {
-    valorStr = valorStr.replace(/[.]/g, '').replace(',', '.');
-  } else {
-    valorStr = valorStr.replace(/[^0-9.]/g, '');
-  }
-  const valor = parseFloat(valorStr) || 0;
+  const valor = parseValorBR(document.getElementById('lf-valor').value);
   if (!nome || !data) { alert('Informe nome e data.'); return; }
 
   const editId = document.getElementById('lf-edit-id').value;
@@ -3962,8 +4064,13 @@ function saveLic() {
   if (editId) {
     // UPDATE existing
     payload.id = Number(editId);
-    if (window._fbReady && window._db) {
-      window._db.collection("licitacoes").doc(String(editId)).set(payload).catch(fbErro);
+    // só os campos mudados, com update (falha se outra pessoa excluiu, em vez de recriar)
+    const origL = window._licOriginal || {};
+    const mudouL = {}; Object.keys(payload).forEach(f => { if ((payload[f] ?? '') !== (origL[f] ?? '')) mudouL[f] = payload[f]; });
+    if (window._fbReady && window._db && Object.keys(mudouL).length) {
+      window._db.collection("licitacoes").doc(String(editId)).update(mudouL).catch(e => {
+        if (e && e.code === 'not-found') alert('Essa licitação foi excluída por outra pessoa enquanto você editava. Nada foi salvo.'); else fbErro(e);
+      });
     }
     const lics = JSON.parse(localStorage.getItem('pmLics') || '[]');
     const idx = lics.findIndex(x => x.id == editId);
@@ -3975,7 +4082,7 @@ function saveLic() {
     }
   } else {
     // CREATE new
-    payload.id = Date.now();
+    payload.id = novoId();
     // grava só a licitação nova (antes regravava todas a partir da cópia local e ressuscitava as excluídas)
     if (window._fbReady && window._db) window._db.collection('licitacoes').doc(String(payload.id)).set(payload).catch(fbErro);
     if (window._fbLics) window._fbLics.push(payload);
@@ -4079,7 +4186,7 @@ function buildAlertSections() {
             <div class="alert-item-title">${esc(l.nome)}</div>
             <div class="alert-item-sub">${esc(l.orgao||'—')} · ${fmtBRL(l.valor)}</div>
           </div>
-          <span class="alert-item-tag tag-externo">Pendente</span>
+          <span class="alert-item-tag tag-externo">Aguardando externo</span>
         </div>`).join('')}
     </div>`;
   }
@@ -4089,7 +4196,7 @@ function buildAlertSections() {
       <h4>⚠️ Tarefas em Atraso</h4>
       ${atrasadas.slice(0,5).map(t => {
         const sec = SECRETARIAS.find(s=>s.id===t.secId);
-        const dateFmt = new Date(t.dateStr+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+        const dateFmt = dataCurta(t.dateStr);
         return `<div class="alert-item">
           <div class="alert-item-icon" style="background:#fee2e2">${sec?sec.icon:'📌'}</div>
           <div class="alert-item-body">
@@ -4136,7 +4243,8 @@ if (!sessionStorage.getItem(todayKey)) {
 //  EQUIPE
 // ═══════════════════════════════════════════════
 
-function renderEquipe(filter = 'semana') {
+function renderEquipe(filter) {
+  filter = filter || window._equipeFilter || 'semana'; window._equipeFilter = filter;
   const page    = document.getElementById('page-equipe');
   const today   = todayStr();
   const tasks   = state._tasks || {};
@@ -4191,10 +4299,10 @@ function renderEquipe(filter = 'semana') {
     const borderStyle = isMe ? `border-color:${m.cor};box-shadow:0 0 0 1px ${m.cor}33` : '';
 
     const taskItems = shown.length === 0
-      ? `<div class="equipe-empty">Nenhuma tarefa ${filter==='concluidas'?'concluída':'pendente'} 🎉</div>`
+      ? `<div class="equipe-empty">${filter==='concluidas' ? 'Nenhuma tarefa concluída' : 'Nada ' + ({hoje:'para hoje', semana:'para esta semana', atraso:'em atraso'}[filter] || 'pendente')} 🎉</div>`
       : shown.map(t => {
           const dotColor = { pendente:'var(--fg-3)', em_producao:'var(--purple)', andamento:'var(--gold)', concluido:'var(--green)' }[t.status||'pendente'];
-          const dateFmt = t.dateStr ? new Date(t.dateStr+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) : '—';
+          const dateFmt = t.dateStr ? dataCurta(t.dateStr) : '—';
           const isLate = t.dateStr < today && t.status !== 'concluido';
           return `<div class="equipe-task-item" style="cursor:pointer" onclick="switchTabById('${t.secId}');setTimeout(()=>selectDay('${t.secId}','${t.dateStr}'),200)">
             <div class="equipe-task-dot" style="background:${isLate?'var(--red)':dotColor}"></div>
@@ -4214,7 +4322,7 @@ function renderEquipe(filter = 'semana') {
             ${m.nome}
             ${isMe ? `<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:${m.bg};color:${m.cor}">Você</span>` : ''}
           </div>
-          <div class="equipe-sub">${pendTotal} pendência${pendTotal!==1?'s':''} abertas</div>
+          <div class="equipe-sub">${pendTotal} pendência${pendTotal!==1?'s':''} aberta${pendTotal!==1?'s':''}</div>
         </div>
         <div style="font-size:12px;color:var(--fg-3);font-weight:500">Ver tudo →</div>
       </div>
@@ -4254,6 +4362,7 @@ function openMembroPendencias(nome) {
 window.openMembroPendencias = openMembroPendencias;
 
 function renderPendentesMembro(nome) {
+  window._pendMembro = nome;
   const today = todayStr();
   const m = MEMBROS.find(x => x.nome === nome);
   const statusColors = { pendente:'var(--fg-3)', em_producao:'var(--purple)', andamento:'var(--gold)', concluido:'var(--green)' };
@@ -4278,7 +4387,7 @@ function renderPendentesMembro(nome) {
     const sl = statusLabels[t.status||'pendente'];
     const isLate = t.dateStr < today;
     const dateFmt = t.dateStr
-      ? (t.dateStr === today ? 'Hoje' : new Date(t.dateStr+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}))
+      ? (t.dateStr === today ? 'Hoje' : dataCurta(t.dateStr))
       : '—';
     return `<div class="pend-item">
       <div class="pend-dot" style="background:${isLate?'var(--red)':sc}"></div>
@@ -4327,14 +4436,13 @@ function updateSyncIndicator(ok) {
   }
 }
 window.updateSyncIndicator = updateSyncIndicator;
-window.addEventListener('online',  () => updateSyncIndicator(true));
+// 'online' não garante servidor: o indicador vem do listener de metadados no bloco do Firebase
 window.addEventListener('offline', () => updateSyncIndicator(false));
 // Check every second for first 10 seconds
 let _syncChecks = 0;
 const _syncInterval = setInterval(() => {
   _syncChecks++;
   if (window._fbReady) {
-    updateSyncIndicator(true);
     clearInterval(_syncInterval);
   } else if (_syncChecks >= 10) {
     updateSyncIndicator(navigator.onLine);
@@ -4465,14 +4573,12 @@ async function runAiExtraction() {
 function saveAiLic() {
   const nome = document.getElementById('ai-nome').value.trim();
   if (!nome) { alert('Informe o nome da licitação.'); return; }
-  let valorStr = document.getElementById('ai-valor').value.trim();
-  if (valorStr.includes(',')) valorStr = valorStr.replace(/[.]/g,'').replace(',','.');
-  const valor = parseFloat(valorStr) || 0;
+  const valor = parseValorBR(document.getElementById('ai-valor').value);
   const proc  = document.getElementById('ai-processo').value.trim();
   const obsRaw= document.getElementById('ai-obs').value.trim();
   const obs   = [proc ? 'Processo: ' + proc : '', obsRaw].filter(Boolean).join(' | ');
   const payload = {
-    id: Date.now(),
+    id: novoId(),
     nome,
     data:   document.getElementById('ai-data').value,
     valor,
@@ -4524,9 +4630,9 @@ function saveSocialData(d) {
 
 function fmtK(n) {
   if (!n) return '0';
-  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
-  if (n >= 1000)    return (n/1000).toFixed(1).replace('.0','') + 'mil';
-  return n.toString();
+  if (n >= 1000000) return (n/1000000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' mi';
+  if (n >= 1000)    return (n/1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' mil';
+  return n.toLocaleString('pt-BR');
 }
 function deltaHtml(cur, prev) {
   if (!prev || prev === 0) return '';
@@ -4537,7 +4643,7 @@ function deltaHtml(cur, prev) {
 }
 
 function renderSocial(subTab) {
-  subTab = subTab || 'dashboard';
+  subTab = subTab || window._socialTab || 'dashboard'; window._socialTab = subTab;
   const page = document.getElementById('page-social');
   const data = getSocialData();
   const hist = data.historico;
@@ -4551,7 +4657,7 @@ function renderSocial(subTab) {
     { id:'metas',         label:'Metas' },
     { id:'recomendacoes', label:'Recomendações' },
   ];
-  const tabLabels = { dashboard:'📊 Dashboard', historico:'📅 Histórico', metas:'🎯 Metas', recomendacoes:'💡 Recomendações' };
+  const tabLabels = { dashboard:'📊 Resumo', historico:'📅 Histórico', metas:'🎯 Metas', recomendacoes:'💡 Recomendações' };
   const tabs = tabDefs.map(function(t) {
     var cls = subTab === t.id ? 'social-tab active' : 'social-tab';
     return '<button class="' + cls + '" onclick="renderSocial(\'' + t.id + '\')">' + tabLabels[t.id] + '</button>';
@@ -4572,10 +4678,10 @@ function renderSocial(subTab) {
           <p>Último período: ${last.mes || '—'} &nbsp;·&nbsp; ${data.totalSeguidores ? fmtK(data.totalSeguidores) + ' seguidores totais' : ''}</p>
         </div>
         <div class="social-hero-stats">
-          <div class="shs"><div class="sv">${fmtK(last.views)}</div><div class="sl">Views</div></div>
+          <div class="shs"><div class="sv">${fmtK(last.views)}</div><div class="sl">Visualizações</div></div>
           <div class="shs"><div class="sv">${fmtK(last.interacoes)}</div><div class="sl">Interações</div></div>
           <div class="shs"><div class="sv">+${last.seguidores||0}</div><div class="sl">Novos seg.</div></div>
-          <div class="shs"><div class="sv">${last.posts||0}</div><div class="sl">Posts</div></div>
+          <div class="shs"><div class="sv">${last.posts||0}</div><div class="sl">Publicações</div></div>
         </div>
       </div>
 
@@ -4679,7 +4785,7 @@ function renderSocial(subTab) {
         <button class="btn btn-primary" onclick="openAddMes()">+ Adicionar Mês</button>
       </div>
       <div class="hist-table">
-        <div class="hist-header"><div>Mês</div><div>Views</div><div>Interações</div><div>Novos Seg.</div><div>Posts</div><div>Variação</div></div>
+        <div class="hist-header"><div>Mês</div><div>Visualizações</div><div>Interações</div><div>Novos seg.</div><div>Publicações</div><div>Variação</div></div>
         ${rows}
       </div>
     `;
@@ -4960,6 +5066,8 @@ function saveMetas() {
       box.onclick = () => switchTabById('configuracoes');
       right.prepend(box);
     }
+    const ativo = (typeof getActiveUser === 'function') ? getActiveUser() : null;
+    if (ativo) { box.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${escapeHtml(ativo.bg||'rgba(110,162,255,.16)')};color:${escapeHtml(ativo.cor||'#fff')};font-weight:700">${escapeHtml(ativo.inicial||ativo.nome[0])}</div><div style="line-height:1.05"><div style="font:700 12px Space Grotesk;color:#fff">${escapeHtml(ativo.nome)}</div><div style="font:500 9px JetBrains Mono;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em">Comunicação</div></div>`; return; }
     box.innerHTML = `${cfg.user.foto ? `<img src="${cfg.user.foto}" style="width:32px;height:32px;border-radius:50%;object-fit:cover">` : `<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(110,162,255,.16);color:#fff">👤</div>`}<div style="line-height:1.05"><div style="font:700 12px Space Grotesk;color:#fff">${escapeHtml(cfg.user.nome||'Usuário')}</div><div style="font:500 9px JetBrains Mono;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.08em">${escapeHtml(cfg.user.cargo||'Comunicação')}</div></div>`;
   }
 
@@ -5019,7 +5127,7 @@ function saveMetas() {
 
   function ensureConfigTab(){
     const nav=document.getElementById('navTabs'); if(nav && !document.querySelector('[data-tab="configuracoes"]')){
-      const d=document.createElement('div'); d.className='nav-tab'; d.dataset.tab='configuracoes'; d.onclick=function(){switchTab(this)}; d.innerHTML='<div class="dot" style="background:#6EA2FF"></div> ⚙️ Configurações'; nav.appendChild(d);
+      const d=document.createElement('div'); d.className='nav-tab'; d.dataset.tab='configuracoes'; d.onclick=function(){switchTab(this); if (window.closeSidebar && innerWidth <= 768) closeSidebar();}; d.innerHTML='<span class="nav-icon">⚙</span> Configurações'; nav.appendChild(d);
     }
     const main=document.querySelector('main'); if(main && !document.getElementById('page-configuracoes')){ const p=document.createElement('div'); p.className='page'; p.id='page-configuracoes'; main.appendChild(p); }
     applyHeaderUser();
@@ -5052,8 +5160,8 @@ function saveMetas() {
     let sections=''; const block=(title,items)=>`<div class="alert-section"><h4>${title}</h4>${items}</div>`;
     if(licHoje.length) sections+=block('Sinais críticos de hoje', licHoje.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${Number(l.id)})"><div class="alert-item-icon">⚖️</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${fmtBRL(l.valor)} · ${escapeHtml(l.orgao||'Sem órgão')}</div></div><span class="alert-item-tag tag-hoje">Hoje</span></div>`).join(''));
     if(licAmanha.length) sections+=block('Próximas decisões', licAmanha.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${Number(l.id)})"><div class="alert-item-icon">↗</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${fmtBRL(l.valor)} · ${escapeHtml(l.orgao||'Sem órgão')}</div></div><span class="alert-item-tag tag-amanha">Amanhã</span></div>`).join(''));
-    if(licExterno.length) sections+=block('Dependências externas', licExterno.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${Number(l.id)})"><div class="alert-item-icon">⌁</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${escapeHtml(l.orgao||'—')} · ${fmtBRL(l.valor)}</div></div><span class="alert-item-tag tag-externo">Pendente</span></div>`).join(''));
-    if(atrasadas.length) sections+=block('Execuções em atraso', atrasadas.slice(0,6).map(t=>{ const sec=SECRETARIAS.find(s=>s.id===t.secId); const dateFmt=new Date(t.dateStr+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); return `<div class="alert-item" onclick="openAlertTarget('task',null,'${t.secId}','${t.dateStr}',${Number(t.id)})"><div class="alert-item-icon">${sec?sec.icon:'•'}</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(t.titulo)}</div><div class="alert-item-sub">${escapeHtml(sec?sec.nome:'')} · ${dateFmt} · ${escapeHtml(t.canal||'')}</div></div><span class="alert-item-tag tag-atraso">Atrasado</span></div>`; }).join('') + (atrasadas.length>6?`<div style="font-size:12px;color:var(--os-muted);padding:8px 0">+${atrasadas.length-6} outros sinais em atraso</div>`:''));
+    if(licExterno.length) sections+=block('Dependências externas', licExterno.map(l=>`<div class="alert-item" onclick="openAlertTarget('lic',${Number(l.id)})"><div class="alert-item-icon">📄</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(l.nome)}</div><div class="alert-item-sub">${escapeHtml(l.orgao||'—')} · ${fmtBRL(l.valor)}</div></div><span class="alert-item-tag tag-externo">Aguardando externo</span></div>`).join(''));
+    if(atrasadas.length) sections+=block('Execuções em atraso', atrasadas.slice(0,6).map(t=>{ const sec=SECRETARIAS.find(s=>s.id===t.secId); const dateFmt=dataCurta(t.dateStr); return `<div class="alert-item" onclick="openAlertTarget('task',null,'${t.secId}','${t.dateStr}',${Number(t.id)})"><div class="alert-item-icon">${sec?sec.icon:'•'}</div><div class="alert-item-body"><div class="alert-item-title">${escapeHtml(t.titulo)}</div><div class="alert-item-sub">${escapeHtml(sec?sec.nome:'')} · ${dateFmt} · ${escapeHtml(t.canal||'')}</div></div><span class="alert-item-tag tag-atraso">Atrasado</span></div>`; }).join('') + (atrasadas.length>6?`<div style="font-size:12px;color:var(--os-muted);padding:8px 0">+${atrasadas.length-6} outros sinais em atraso</div>`:''));
     return sections || `<div class="alert-empty">Tudo em ordem no momento. Nenhum sinal crítico para hoje.</div>`;
   }
   const oldOpenAlert = window.openDailyAlert;
@@ -5072,7 +5180,7 @@ function saveMetas() {
     oldRenderSocial(subTab);
     if((subTab||'dashboard')==='historico'){
       const d=getSocialData(); const table=document.querySelector('.hist-table'); if(table){
-        table.innerHTML = `<div class="hist-header"><div>Mês</div><div>Views</div><div>Interações</div><div>Novos Seg.</div><div>Posts</div><div>Ações</div></div>` + (d.historico.length? d.historico.map((h,i)=>`<div class="hist-row"><div class="hist-mes">${escapeHtml(h.mes)}</div><div class="hist-val">${fmtK(h.views)}</div><div class="hist-val">${fmtK(h.interacoes)}</div><div class="hist-val">+${h.seguidores||0}</div><div class="hist-val">${h.posts||0}</div><div style="display:flex;gap:6px"><button class="hist-action-btn" onclick="openEditMes(${i})">✎</button><button class="hist-action-btn" onclick="deleteMes(${i})">×</button></div></div>`).reverse().join('') : '<div style="padding:40px;text-align:center;color:var(--os-muted)">Nenhum mês registrado ainda.</div>');
+        table.innerHTML = `<div class="hist-header"><div>Mês</div><div>Visualizações</div><div>Interações</div><div>Novos seg.</div><div>Publicações</div><div>Ações</div></div>` + (d.historico.length? d.historico.map((h,i)=>`<div class="hist-row"><div class="hist-mes">${escapeHtml(h.mes)}</div><div class="hist-val">${fmtK(h.views)}</div><div class="hist-val">${fmtK(h.interacoes)}</div><div class="hist-val">+${h.seguidores||0}</div><div class="hist-val">${h.posts||0}</div><div style="display:flex;gap:6px"><button class="hist-action-btn" onclick="openEditMes(${i})">✎</button><button class="hist-action-btn" onclick="deleteMes(${i})">×</button></div></div>`).reverse().join('') : '<div style="padding:40px;text-align:center;color:var(--os-muted)">Nenhum mês registrado ainda.</div>');
       }
       const header=document.querySelector('#page-social .section-title'); if(header) header.textContent='Histórico mensal editável';
     }

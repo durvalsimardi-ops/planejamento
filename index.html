@@ -1813,6 +1813,20 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
     });
   };
 
+  // Muda um documento de config lendo a versão do servidor na hora (transação): quem salva por último não apaga o que o outro salvou.
+  // Sem internet, aplica a mudança na última cópia conhecida e grava com set (fila do Firebase).
+  window.mutarConfig = (docId, fn, base) => {
+    const ref = db.collection('config').doc(docId);
+    return (navigator.onLine ? db.runTransaction : () => Promise.reject({ code: 'unavailable' })).call(db, async tx => {
+      const s = await tx.get(ref);
+      const d = s.exists ? s.data() : JSON.parse(JSON.stringify(base || {}));
+      fn(d); tx.set(ref, d);
+    }).catch(e => {
+      if (semRede(e)) { const d = JSON.parse(JSON.stringify(base || {})); fn(d); ref.set(d); return; }
+      window.fbErro(e);
+    });
+  };
+
   // Mídias Sociais e Configurações: recebe o que os outros salvaram (antes só lia o localStorage deste navegador).
   db.collection('config').doc('social').onSnapshot(s => {
     if (!s.exists) return;
@@ -1822,6 +1836,8 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
   db.collection('config').doc('os').onSnapshot(s => {
     if (!s.exists) return;
     try { localStorage.setItem('pmOsConfig', JSON.stringify(s.data())); } catch (e) {}
+    window.applyHeaderUser && window.applyHeaderUser();
+    if (document.querySelector('[data-tab="configuracoes"].active')) window.renderConfiguracoes && window.renderConfiguracoes();
   }, e => console.error('config/os', e));
   window._fsLib   = {
     collection: (db, col)       => db.collection(col),
@@ -1858,12 +1874,10 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
         else {
           const secIds = ['comunicacao','educacao','saude','obras','agricultura','familia','assistencia','desenvolvimento','fazenda','gabinete'];
           if (secIds.includes(tabId)) {
-            // refresh day panel if open
-            if (window.state.selectedDate) {
-              window.renderDayPanel && window.renderDayPanel(tabId, window.state.selectedDate);
-              const yr = parseInt((window.state.selectedDate||'').slice(0,4)) || new Date().getFullYear();
-              window.renderAnnualCalendar && window.renderAnnualCalendar(tabId, yr);
-            }
+            // redesenha a secretaria inteira (inclui o quadro de pendentes) e volta para o dia que estava aberto
+            const sel = window.state.selectedDate, rolagem = window.scrollY;
+            if (window.renderSecretaria) { window.renderSecretaria(tabId); if (sel && window.selectDay) window.selectDay(tabId, sel, true); window.scrollTo(0, rolagem); }
+            else if (sel) window.renderDayPanel && window.renderDayPanel(tabId, sel);
           }
         }
       }
@@ -1878,7 +1892,7 @@ window.fbErro = e => { console.error(e); window.updateSyncIndicator && window.up
     lics.sort((a,b) => (a.data||'').localeCompare(b.data||''));
     window._fbLics = lics;
     if (document.querySelector('[data-tab="licitacoes"].active')) {
-      window.renderLicitacoes && window.renderLicitacoes();
+      window.renderLicitacoes && window.renderLicitacoes(window._licFilter || 'todos'); // mantém o filtro escolhido
     }
     const alertOpen = document.getElementById('alertModal')?.classList.contains('open');
     if (alertOpen) {
@@ -3687,6 +3701,7 @@ window.taskKey           = taskKey;
 window.todayStr          = todayStr;
 window.getCurrentWeek    = getCurrentWeek;
 window.selectDay         = selectDay;
+window.renderSecretaria  = renderSecretaria;
 
 // ═══════════════════════════════════════════════
 //  LICITAÇÕES
@@ -3740,6 +3755,7 @@ function dateClass(str) {
 }
 
 function renderLicitacoes(filter = 'todos') {
+  window._licFilter = filter;
   const page = document.getElementById('page-licitacoes');
   const lics = getLics();
   const filtered = filter === 'todos' ? lics : lics.filter(l => l.status === filter);
@@ -4493,8 +4509,14 @@ function getSocialData() {
   localStorage.setItem('pmSocial', JSON.stringify(def));
   return def;
 }
+// Aplica fn nos dados de Mídias (na tela e no servidor, por transação).
+function mutarSocial(fn) {
+  const d = getSocialData(); fn(d);
+  try { localStorage.setItem('pmSocial', JSON.stringify(d)); } catch (e) {}
+  if (window._fbReady && window.mutarConfig) window.mutarConfig('social', fn, getSocialData());
+}
 function saveSocialData(d) {
-  localStorage.setItem('pmSocial', JSON.stringify(d));
+  try { localStorage.setItem('pmSocial', JSON.stringify(d)); } catch (e) {}
   if (window._fbReady && window._db) {
     window._db.collection("config").doc("social").set(d).catch(fbErro);
   }
@@ -4754,7 +4776,7 @@ function openAddMes() {
 function saveNewMes() {
   const mes = document.getElementById('nm-mes').value.trim();
   if (!mes) { alert('Informe o mês.'); return; }
-  const d = getSocialData();
+  const d = { historico: [] };
   d.historico.push({
     mes,
     views:       parseInt(document.getElementById('nm-views').value)||0,
@@ -4763,7 +4785,8 @@ function saveNewMes() {
     posts:       parseInt(document.getElementById('nm-posts').value)||0,
     contas:      parseInt(document.getElementById('nm-contas').value)||0,
   });
-  saveSocialData(d);
+  const novoMes = d.historico[d.historico.length - 1];
+  mutarSocial(x => { x.historico = (x.historico || []).filter(h => h.mes !== novoMes.mes); x.historico.push(novoMes); });
   document.getElementById('addMesModal').remove();
   renderSocial('historico');
 }
@@ -4777,7 +4800,7 @@ function saveMetas() {
     posts:      parseInt(document.getElementById('meta-posts').value)||0,
   };
   d.totalSeguidores = parseInt(document.getElementById('meta-total-seg').value)||0;
-  saveSocialData(d);
+  mutarSocial(x => { x.metas = d.metas; x.totalSeguidores = d.totalSeguidores; });
   alert('Metas salvas! ✅');
   renderSocial('metas');
 }
@@ -4902,12 +4925,28 @@ function saveMetas() {
     const def = { user:{nome:'Durval', cargo:'Comunicação', foto:''}, secretariaLogo:'', usuarios:[{nome:'Durval', funcao:'Comunicação', nivel:'Admin', foto:''}] };
     try { return Object.assign(def, JSON.parse(localStorage.getItem('pmOsConfig')||'{}')); } catch(e){ return def; }
   }
+  // Aplica fn na config (na tela e no servidor, por transação).
+  function mutarOs(fn){
+    const cfg = getOsConfig(); fn(cfg);
+    try { localStorage.setItem('pmOsConfig', JSON.stringify(cfg)); } catch(e) {}
+    if (window._fbReady && window.mutarConfig) window.mutarConfig('os', fn, getOsConfig());
+    applyHeaderUser();
+  }
   function saveOsConfig(cfg){
-    localStorage.setItem('pmOsConfig', JSON.stringify(cfg));
+    try { localStorage.setItem('pmOsConfig', JSON.stringify(cfg)); } catch(e) {}
     if (window._fbReady && window._db) window._db.collection('config').doc('os').set(cfg).catch(fbErro);
     applyHeaderUser();
   }
-  function fileToDataUrl(file, cb){ const r = new FileReader(); r.onload = () => cb(r.result); r.readAsDataURL(file); }
+  // Reduz a imagem antes de salvar (foto de celular de 3 MB passava do limite de 1 MB do documento no Firebase).
+  function fileToDataUrl(file, cb, max = 320){
+    const r = new FileReader();
+    r.onload = () => { const img = new Image(); img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      cb(/png|svg|gif/.test(file.type) ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.85));
+    }; img.onerror = () => alert('Não consegui ler essa imagem.'); img.src = r.result; };
+    r.readAsDataURL(file);
+  }
 
   window.applyHeaderUser = function(){
     const cfg = getOsConfig();
@@ -4959,15 +4998,15 @@ function saveMetas() {
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><span class="tiny-note">Equipe</span><h3>Criação de usuários</h3><p>Cadastre usuários internos para organizar responsabilidades da comunicação.</p></div><button class="btn btn-primary" onclick="addOsUser()">+ Novo usuário</button></div>
         <div id="usersList">${(cfg.usuarios||[]).map((u,i)=>userRowHtml(u,i)).join('')}</div>
       </div>`;
-    const f = document.getElementById('cfg-user-foto'); if (f) f.onchange = e => { const file=e.target.files[0]; if(!file)return; fileToDataUrl(file, url=>{ const cfg=getOsConfig(); cfg.user.foto=url; saveOsConfig(cfg); renderConfiguracoes(); }); };
-    const lg = document.getElementById('cfg-sec-logo'); if (lg) lg.onchange = e => { const file=e.target.files[0]; if(!file)return; fileToDataUrl(file, url=>{ const cfg=getOsConfig(); cfg.secretariaLogo=url; saveOsConfig(cfg); renderConfiguracoes(); }); };
+    const f = document.getElementById('cfg-user-foto'); if (f) f.onchange = e => { const file=e.target.files[0]; if(!file)return; fileToDataUrl(file, url=>{ mutarOs(c=>{ c.user=c.user||{}; c.user.foto=url; }); renderConfiguracoes(); }); };
+    const lg = document.getElementById('cfg-sec-logo'); if (lg) lg.onchange = e => { const file=e.target.files[0]; if(!file)return; fileToDataUrl(file, url=>{ mutarOs(c=>{ c.secretariaLogo=url; }); renderConfiguracoes(); }, 600); };
   }
   window.userRowHtml = function(u,i){ return `<div class="user-row"><div class="user-avatar-sm">${u.foto?`<img src="${u.foto}" style="width:44px;height:44px;border-radius:14px;object-fit:cover">`:'👤'}</div><div><div style="font:700 14px Space Grotesk;color:#fff">${escapeHtml(u.nome)}</div><div style="font-size:12px;color:var(--os-muted)">${escapeHtml(u.funcao)} · ${escapeHtml(u.nivel)}</div></div><div style="display:flex;gap:6px"><button class="hist-action-btn" onclick="editOsUser(${i})">Editar</button><button class="hist-action-btn" onclick="deleteOsUser(${i})">Excluir</button></div></div>`; }
-  window.saveUserProfile = function(){ const cfg=getOsConfig(); cfg.user.nome=$('#cfg-user-nome').value.trim()||'Usuário'; cfg.user.cargo=$('#cfg-user-cargo').value.trim()||'Comunicação'; saveOsConfig(cfg); renderConfiguracoes(); }
-  window.clearSecLogo = function(){ const cfg=getOsConfig(); cfg.secretariaLogo=''; saveOsConfig(cfg); renderConfiguracoes(); }
-  window.addOsUser = function(){ const nome=prompt('Nome do usuário:'); if(!nome)return; const funcao=prompt('Função:', 'Comunicação')||'Comunicação'; const nivel=prompt('Nível:', 'Editor')||'Editor'; const cfg=getOsConfig(); cfg.usuarios=cfg.usuarios||[]; cfg.usuarios.push({nome,funcao,nivel,foto:''}); saveOsConfig(cfg); renderConfiguracoes(); }
-  window.editOsUser = function(i){ const cfg=getOsConfig(); const u=cfg.usuarios[i]; if(!u)return; const nome=prompt('Nome:',u.nome); if(!nome)return; u.nome=nome; u.funcao=prompt('Função:',u.funcao)||u.funcao; u.nivel=prompt('Nível:',u.nivel)||u.nivel; saveOsConfig(cfg); renderConfiguracoes(); }
-  window.deleteOsUser = function(i){ if(!confirm('Excluir este usuário?'))return; const cfg=getOsConfig(); cfg.usuarios.splice(i,1); saveOsConfig(cfg); renderConfiguracoes(); }
+  window.saveUserProfile = function(){ const nome=$('#cfg-user-nome').value.trim()||'Usuário', cargo=$('#cfg-user-cargo').value.trim()||'Comunicação'; mutarOs(c=>{ c.user=c.user||{}; c.user.nome=nome; c.user.cargo=cargo; }); renderConfiguracoes(); }
+  window.clearSecLogo = function(){ mutarOs(c=>{ c.secretariaLogo=''; }); renderConfiguracoes(); }
+  window.addOsUser = function(){ const nome=prompt('Nome do usuário:'); if(!nome)return; const funcao=prompt('Função:', 'Comunicação')||'Comunicação'; const nivel=prompt('Nível:', 'Editor')||'Editor'; mutarOs(c=>{ c.usuarios=(c.usuarios||[]).filter(u=>u.nome!==nome); c.usuarios.push({nome,funcao,nivel,foto:''}); }); renderConfiguracoes(); }
+  window.editOsUser = function(i){ const u=(getOsConfig().usuarios||[])[i]; if(!u)return; const orig=u.nome; const nome=prompt('Nome:',u.nome); if(!nome)return; const funcao=prompt('Função:',u.funcao)||u.funcao, nivel=prompt('Nível:',u.nivel)||u.nivel; mutarOs(c=>{ c.usuarios=c.usuarios||[]; const k=c.usuarios.findIndex(x=>x.nome===orig); const novo={...(c.usuarios[k]||u), nome, funcao, nivel}; if(k>=0) c.usuarios[k]=novo; else c.usuarios.push(novo); }); renderConfiguracoes(); }
+  window.deleteOsUser = function(i){ if(!confirm('Excluir este usuário?'))return; const orig=((getOsConfig().usuarios||[])[i]||{}).nome; mutarOs(c=>{ c.usuarios=(c.usuarios||[]).filter(x=>x.nome!==orig); }); renderConfiguracoes(); }
 
   const oldSwitch = window.switchTab;
   window.switchTab = function(el){
@@ -5026,8 +5065,8 @@ function saveMetas() {
 
   // Social: add editable monthly performance panel with edit/delete.
   window.openEditMes = function(i){ const d=getSocialData(); const h=d.historico[i]; if(!h)return; const mo=document.createElement('div'); mo.className='modal-overlay open'; mo.id='editMesModal'; mo.innerHTML=`<div class="modal"><div class="modal-header"><h2>Editar mês</h2><button class="modal-close" onclick="document.getElementById('editMesModal').remove()">✕</button></div><div class="modal-body"><div class="social-editor-grid"><div class="form-group"><label>Mês/Ano</label><input class="form-control" id="em-mes" value="${escapeHtml(h.mes)}"></div><div class="form-group"><label>Visualizações</label><input class="form-control" id="em-views" type="number" value="${h.views||0}"></div><div class="form-group"><label>Interações</label><input class="form-control" id="em-int" type="number" value="${h.interacoes||0}"></div><div class="form-group"><label>Novos Seguidores</label><input class="form-control" id="em-seg" type="number" value="${h.seguidores||0}"></div><div class="form-group"><label>Posts</label><input class="form-control" id="em-posts" type="number" value="${h.posts||0}"></div><div class="form-group"><label>Contas Alcançadas</label><input class="form-control" id="em-contas" type="number" value="${h.contas||0}"></div></div></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveEditMes(${i})">Salvar alterações</button><button class="btn btn-ghost" onclick="document.getElementById('editMesModal').remove()">Cancelar</button></div></div>`; document.body.appendChild(mo); mo.addEventListener('click',e=>{if(e.target===mo)mo.remove()}); }
-  window.saveEditMes = function(i){ const d=getSocialData(); d.historico[i]={mes:$('#em-mes').value.trim(),views:+$('#em-views').value||0,interacoes:+$('#em-int').value||0,seguidores:+$('#em-seg').value||0,posts:+$('#em-posts').value||0,contas:+$('#em-contas').value||0}; saveSocialData(d); $('#editMesModal').remove(); renderSocial('historico'); }
-  window.deleteMes = function(i){ if(!confirm('Excluir este mês do histórico?'))return; const d=getSocialData(); d.historico.splice(i,1); saveSocialData(d); renderSocial('historico'); }
+  window.saveEditMes = function(i){ const orig=(getSocialData().historico[i]||{}).mes; const novo={mes:$('#em-mes').value.trim(),views:+$('#em-views').value||0,interacoes:+$('#em-int').value||0,seguidores:+$('#em-seg').value||0,posts:+$('#em-posts').value||0,contas:+$('#em-contas').value||0}; mutarSocial(x=>{ x.historico=x.historico||[]; const k=x.historico.findIndex(h=>h.mes===orig); if(k>=0) x.historico[k]=novo; else x.historico.push(novo); }); $('#editMesModal').remove(); renderSocial('historico'); }
+  window.deleteMes = function(i){ if(!confirm('Excluir este mês do histórico?'))return; const orig=(getSocialData().historico[i]||{}).mes; mutarSocial(x=>{ x.historico=(x.historico||[]).filter(h=>h.mes!==orig); }); renderSocial('historico'); }
   const oldRenderSocial = window.renderSocial;
   window.renderSocial = function(subTab){
     oldRenderSocial(subTab);

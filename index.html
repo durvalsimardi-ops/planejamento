@@ -274,7 +274,7 @@
     background: var(--glass);
     border: 1px solid var(--glass-border);
     border-radius: 10px;
-    padding: 5px 12px;
+    padding: 3px 10px; row-gap: 0;
   }
   .countdown-block { text-align: center; }
   .countdown-block .num {
@@ -1360,7 +1360,7 @@
   @media (max-width: 600px) {
     .hist-table { overflow-x: auto; background: linear-gradient(to left, rgba(0,0,0,.45), transparent 24px) right / 24px 100% no-repeat; }
     .hist-header, .hist-row { min-width: 560px; }
-    .hist-header > :first-child, .hist-row > :first-child { position: sticky; left: 0; background: var(--bg-card, #161616); z-index: 1; }
+    .hist-header > :first-child, .hist-row > :first-child { position: sticky; left: 0; background: #1c1c1c; z-index: 1; padding-right: 12px; align-self: stretch; display: flex; align-items: center; }
   }
   @media (max-width: 1180px) and (min-width: 769px) {
     .lic-table-header > :nth-child(4), .lic-row > :nth-child(4) { display: none; }
@@ -1728,7 +1728,8 @@
   @media (max-width: 1180px) { .home-hero-inner { grid-template-columns: 1fr !important; } }
   @media (max-width: 768px) {
     /* toques de pelo menos 44 px */
-    .week-btn, .lic-filter-btn, .social-tab, .hist-action-btn, .lic-action-btn, .btn { min-height: 44px; min-width: 44px; }
+    .week-btn, .lic-filter-btn, .social-tab, .hist-action-btn, .lic-action-btn, .btn, .hero-btn, .file-input-label { min-height: 44px; min-width: 44px; }
+    .file-input-label, .hero-btn { display: inline-flex; align-items: center; justify-content: center; }
     .alert-close-btn, .modal-close, .mob-menu-btn { width: 44px !important; height: 44px !important; }
     .dp-task button { min-width: 40px; min-height: 40px; }
     /* calendário: um mês por linha, dias maiores */
@@ -1794,6 +1795,7 @@ window.fbErro = e => {
   const c = e && e.code;
   const msg = (c === 'aborted' || c === 'failed-precondition') ? 'muita gente salvou ao mesmo tempo. Tente de novo.'
     : c === 'permission-denied' ? 'sem permissão para salvar.'
+    : c === 'resource-exhausted' ? 'o limite diário do banco gratuito acabou. Volta sozinho por volta das 5h da manhã.'
     : c === 'not-found' ? 'o item não existe mais (outra pessoa pode ter excluído).'
     : (e && e.message || e);
   alert('Não salvou: ' + msg);
@@ -1815,6 +1817,9 @@ window.fbErro = e => {
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+  // Guarda uma cópia dos dados no navegador (IndexedDB): quem reabre o site não relê tudo do servidor.
+  // Se o navegador não deixar (aba anônima, Safari privado), segue sem cópia.
+  try { db.enablePersistence({ synchronizeTabs: true }).catch(e => console.warn('sem cópia local:', e && e.code)); } catch (e) {}
 
   // Expose to global
   window._db      = db;
@@ -1849,6 +1854,7 @@ window.fbErro = e => {
         try {
           if (!navigator.onLine) throw { code: 'unavailable' };
           const r = await db.runTransaction(fazer);
+          _avisouOffline = false;
           window.updateSyncIndicator && window.updateSyncIndicator(true);
           return r;
         } catch (e) {
@@ -1864,7 +1870,7 @@ window.fbErro = e => {
   };
   const esvaziarFila = () => {
     if (!navigator.onLine || !window._fila.length) return;
-    const f = window._fila; window._fila = []; _avisouOffline = false;
+    const f = window._fila; window._fila = [];
     f.forEach(run => run());
   };
   window.addEventListener('online', () => setTimeout(esvaziarFila, 1500));
@@ -1876,7 +1882,7 @@ window.fbErro = e => {
     return tentar(async tx => {
       const s = await tx.get(ref);
       const list = fn(s.exists ? (s.data().list || []) : []);
-      tx.set(ref, { list });
+      if (list.length) tx.set(ref, { list }); else if (s.exists) tx.delete(ref);
       return list;
     }, e => { desfaz([key]); window.fbErro(e); });
   };
@@ -1887,7 +1893,7 @@ window.fbErro = e => {
       const a = await tx.get(refOld), b = oldKey === newKey ? a : await tx.get(refNew);
       const old = ((a.exists && a.data().list) || []).filter(t => t.id != id);
       if (oldKey === newKey) { tx.set(refOld, { list: [...old, upd] }); return; }
-      tx.set(refOld, { list: old });
+      if (old.length) tx.set(refOld, { list: old }); else if (a.exists) tx.delete(refOld);
       tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
     }, e => { desfaz([oldKey, newKey]); window.fbErro(e); });
   };
@@ -1910,7 +1916,8 @@ window.fbErro = e => {
       if (!cur) throw { code: 'sumiu' };
       const upd = { ...cur, ...mudou };
       if (oldKey === newKey) { tx.set(refOld, { list: la.map(t => t.id == id ? upd : t) }); return; }
-      tx.set(refOld, { list: la.filter(t => t.id != id) });
+      const resto = la.filter(t => t.id != id);
+      if (resto.length) tx.set(refOld, { list: resto }); else tx.delete(refOld);
       tx.set(refNew, { list: [...((b.exists && b.data().list) || []).filter(t => t.id != id), upd] });
     }, e => {
       desfaz([oldKey, newKey]);
@@ -1976,7 +1983,7 @@ window.fbErro = e => {
           if (secIds.includes(tabId)) {
             // redesenha a secretaria inteira (inclui o quadro de pendentes) e volta para o dia que estava aberto
             const sel = window.state.selectedDate, rolagem = window.scrollY;
-            if (window.renderSecretaria) { window.renderSecretaria(tabId); if (sel && window.selectDay) window.selectDay(tabId, sel, true); window.scrollTo(0, rolagem); }
+            if (window.renderSecretaria) { window.renderSecretaria(tabId, true); if (sel && window.selectDay) window.selectDay(tabId, sel, true); window.scrollTo(0, rolagem); }
             else if (sel) window.renderDayPanel && window.renderDayPanel(tabId, sel);
           }
         }
@@ -2132,7 +2139,7 @@ window.fbErro = e => {
     <div class="today-badge">
       <span id="headerDate" style="color:rgba(255,255,255,.4);font-size:12px"></span>
     </div>
-    <div class="countdown" title="Tempo até segunda-feira, 8h" id="countdown" aria-label="Tempo até segunda-feira, 8h"><div style="flex-basis:100%;font-size:10px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.5px;text-align:center;white-space:nowrap">até segunda, 8h</div>
+    <div class="countdown" title="Tempo até segunda-feira, 8h" id="countdown" aria-label="Tempo até segunda-feira, 8h"><div style="flex-basis:100%;font-size:9px;line-height:1.1;color:var(--fg-3);text-transform:uppercase;letter-spacing:.5px;text-align:center;white-space:nowrap">até segunda, 8h</div>
       <div class="countdown-block"><div class="num" id="cd-dias">--</div><div class="lbl">Dias</div></div>
       <div class="countdown-sep">:</div>
       <div class="countdown-block"><div class="num" id="cd-hrs">--</div><div class="lbl">Horas</div></div>
@@ -2752,7 +2759,8 @@ function renderOverview() {
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const DIAS_MINI = ['D','S','T','Q','Q','S','S'];
 
-function renderSecretaria(secId) {
+function renderSecretaria(secId, manterMes) {
+  if (!manterMes && window._calOffset) window._calOffset[secId] = 0;
   const s = SECRETARIAS.find(x => x.id === secId);
   const container = document.getElementById(`page-${secId}`);
   const today = todayStr();
@@ -5214,7 +5222,7 @@ function saveMetas() {
 
   // Social: add editable monthly performance panel with edit/delete.
   window.openEditMes = function(i){ const d=getSocialData(); const h=d.historico[i]; if(!h)return; const mo=document.createElement('div'); mo.className='modal-overlay open'; mo.id='editMesModal'; mo.innerHTML=`<div class="modal"><div class="modal-header"><h2>Editar mês</h2><button class="modal-close" onclick="document.getElementById('editMesModal').remove()">✕</button></div><div class="modal-body"><div class="social-editor-grid"><div class="form-group"><label>Mês/Ano</label><input class="form-control" id="em-mes" value="${escapeHtml(h.mes)}"></div><div class="form-group"><label>Visualizações</label><input class="form-control" id="em-views" type="number" value="${h.views||0}"></div><div class="form-group"><label>Interações</label><input class="form-control" id="em-int" type="number" value="${h.interacoes||0}"></div><div class="form-group"><label>Novos Seguidores</label><input class="form-control" id="em-seg" type="number" value="${h.seguidores||0}"></div><div class="form-group"><label>Posts</label><input class="form-control" id="em-posts" type="number" value="${h.posts||0}"></div><div class="form-group"><label>Contas Alcançadas</label><input class="form-control" id="em-contas" type="number" value="${h.contas||0}"></div></div></div><div class="modal-footer"><button class="btn btn-primary" onclick="saveEditMes(${i})">Salvar alterações</button><button class="btn btn-ghost" onclick="document.getElementById('editMesModal').remove()">Cancelar</button></div></div>`; document.body.appendChild(mo); mo.addEventListener('click',e=>{if(e.target===mo)mo.remove()}); }
-  window.saveEditMes = function(i){ const orig=(getSocialData().historico[i]||{}).mes; const novo={mes:$('#em-mes').value.trim(),views:+$('#em-views').value||0,interacoes:+$('#em-int').value||0,seguidores:+$('#em-seg').value||0,posts:+$('#em-posts').value||0,contas:+$('#em-contas').value||0}; mutarSocial(x=>{ x.historico=x.historico||[]; const k=x.historico.findIndex(h=>h.mes===orig); if(k>=0) x.historico[k]=novo; else x.historico.push(novo); }); $('#editMesModal').remove(); renderSocial('historico'); }
+  window.saveEditMes = function(i){ const orig=(getSocialData().historico[i]||{}).mes; const novo={mes:$('#em-mes').value.trim(),views:+$('#em-views').value||0,interacoes:+$('#em-int').value||0,seguidores:+$('#em-seg').value||0,posts:+$('#em-posts').value||0,contas:+$('#em-contas').value||0}; const antes=getSocialData().historico[i]||{}; const mudou={}; Object.keys(novo).forEach(f=>{ if(novo[f]!==antes[f]) mudou[f]=novo[f]; }); mutarSocial(x=>{ x.historico=x.historico||[]; const k=x.historico.findIndex(h=>h.mes===orig); if(k>=0) x.historico[k]={...x.historico[k], ...mudou}; else x.historico.push(novo); }); $('#editMesModal').remove(); renderSocial('historico'); }
   window.deleteMes = function(i){ if(!confirm('Excluir este mês do histórico?'))return; const orig=(getSocialData().historico[i]||{}).mes; mutarSocial(x=>{ x.historico=(x.historico||[]).filter(h=>h.mes!==orig); }); renderSocial('historico'); }
   const oldRenderSocial = window.renderSocial;
   window.renderSocial = function(subTab){
